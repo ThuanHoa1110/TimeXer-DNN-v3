@@ -111,6 +111,108 @@ class EncoderLayer(nn.Module):
         return self.norm3(x + y)
 
 
+# =======================================================================================
+# [YÊU CẦU 1] KIẾN TRÚC MẠNG DNN-V3 (DEEP NEURAL NETWORK VERSION 3) THAY THẾ ENCODER BACKBONE
+# =======================================================================================
+
+class DNN_v3_Layer(nn.Module):
+    """
+    DNN-v3 Layer: Khối nơ-ron sâu 3 giai đoạn (3-Stage Deep Neural Network Block)
+    thay thế cho Attention Layer trong Transformer Encoder của TimeXer:
+      - Giai đoạn 1 (Stage 1): Intra-patch Temporal Feature Representation MLP
+      - Giai đoạn 2 (Stage 2): Cross-Variate Exogenous Fusion MLP (Tích hợp thông tin ngoại sinh)
+      - Giai đoạn 3 (Stage 3): Deep Feed-Forward Expansion & Residual Projection MLP
+    """
+    def __init__(self, d_model, d_ff=None, dropout=0.1, activation="gelu"):
+        super(DNN_v3_Layer, self).__init__()
+        d_ff = d_ff or 4 * d_model
+
+        # --- Giai đoạn 1: Trích xuất đặc trưng chuỗi nội sinh qua MLP sâu ---
+        self.stage1_dense1 = nn.Linear(d_model, d_ff)
+        self.stage1_dense2 = nn.Linear(d_ff, d_model)
+        self.norm1 = nn.LayerNorm(d_model)
+
+        # --- Giai đoạn 2: Tích hợp thông tin biến ngoại sinh qua Cross-MLP ---
+        # Thay thế cơ chế Cross-Attention bằng Dense phi tuyến kết hợp Residual
+        self.ex_proj = nn.Sequential(
+            nn.Linear(d_model, d_model),
+            nn.GELU() if activation == "gelu" else nn.ReLU(),
+            nn.Dropout(dropout)
+        )
+        self.cross_fusion = nn.Sequential(
+            nn.Linear(d_model * 2, d_ff),
+            nn.GELU() if activation == "gelu" else nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_ff, d_model)
+        )
+        self.norm2 = nn.LayerNorm(d_model)
+
+        # --- Giai đoạn 3: Mở rộng không gian phi tuyến FFN và Residual ---
+        self.stage3_ffn = nn.Sequential(
+            nn.Linear(d_model, d_ff),
+            nn.GELU() if activation == "gelu" else nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_ff, d_model),
+            nn.Dropout(dropout)
+        )
+        self.norm3 = nn.LayerNorm(d_model)
+
+        self.dropout = nn.Dropout(dropout)
+        self.activation = F.gelu if activation == "gelu" else F.relu
+
+    def forward(self, x, cross, x_mask=None, cross_mask=None, tau=None, delta=None):
+        B, L_ex, D = cross.shape
+        total_tokens = x.shape[0]
+        n_vars = total_tokens // B
+
+        # --- STAGE 1: Feature Extraction via Deep Dense Layer ---
+        res1 = x
+        x_dense = self.dropout(self.activation(self.stage1_dense1(x)))
+        x_dense = self.dropout(self.stage1_dense2(x_dense))
+        x = self.norm1(res1 + x_dense)
+
+        # --- STAGE 2: Exogenous Information Fusion (Cross-MLP) ---
+        ex_summary = torch.mean(cross, dim=1, keepdim=True)
+        ex_summary = self.ex_proj(ex_summary)
+        if n_vars > 1:
+            ex_summary = ex_summary.repeat_interleave(n_vars, dim=0)
+
+        x_glb_ori = x[:, -1:, :]
+        fused_input = torch.cat([x_glb_ori, ex_summary], dim=-1)
+        glb_fused = self.dropout(self.cross_fusion(fused_input))
+        x_glb = self.norm2(x_glb_ori + glb_fused)
+
+        x = torch.cat([x[:, :-1, :], x_glb], dim=1)
+
+        # --- STAGE 3: Feedforward Expansion & Final Residual Normalization ---
+        y = self.stage3_ffn(x)
+        return self.norm3(x + y)
+
+
+class DNN_v3_Encoder(nn.Module):
+    """
+    DNN-v3 Encoder Backbone:
+    Xếp chồng e_layers khối DNN-v3 Layers kèm lớp chuẩn hóa LayerNorm cuối.
+    Hoàn toàn tương thích và thay thế cho Transformer Encoder gốc của TimeXer.
+    """
+    def __init__(self, layers, norm_layer=None, projection=None):
+        super(DNN_v3_Encoder, self).__init__()
+        self.layers = nn.ModuleList(layers)
+        self.norm = norm_layer
+        self.projection = projection
+
+    def forward(self, x, cross, x_mask=None, cross_mask=None, tau=None, delta=None):
+        for layer in self.layers:
+            x = layer(x, cross, x_mask=x_mask, cross_mask=cross_mask, tau=tau, delta=delta)
+
+        if self.norm is not None:
+            x = self.norm(x)
+
+        if self.projection is not None:
+            x = self.projection(x)
+        return x
+
+
 class Model(nn.Module):
 
     def __init__(self, configs):
@@ -129,27 +231,45 @@ class Model(nn.Module):
         self.ex_embedding = DataEmbedding_inverted(configs.seq_len, configs.d_model, configs.embed, configs.freq,
                                                    configs.dropout)
 
-        # Encoder-only architecture
-        self.encoder = Encoder(
-            [
-                EncoderLayer(
-                    AttentionLayer(
-                        FullAttention(False, configs.factor, attention_dropout=configs.dropout,
-                                      output_attention=False),
-                        configs.d_model, configs.n_heads),
-                    AttentionLayer(
-                        FullAttention(False, configs.factor, attention_dropout=configs.dropout,
-                                      output_attention=False),
-                        configs.d_model, configs.n_heads),
-                    configs.d_model,
-                    configs.d_ff,
-                    dropout=configs.dropout,
-                    activation=configs.activation,
-                )
-                for l in range(configs.e_layers)
-            ],
-            norm_layer=torch.nn.LayerNorm(configs.d_model)
-        )
+        # [CẬP NHẬT YÊU CẦU 1] Thay Encoder (hoặc backbone) bằng DNN-v3
+        self.encoder_type = getattr(configs, 'encoder_type', 'dnn_v3')
+        if self.encoder_type == 'dnn_v3':
+            # Khởi tạo Encoder Backbone DNN-v3
+            self.encoder = DNN_v3_Encoder(
+                [
+                    DNN_v3_Layer(
+                        d_model=configs.d_model,
+                        d_ff=configs.d_ff,
+                        dropout=configs.dropout,
+                        activation=configs.activation,
+                    )
+                    for _ in range(configs.e_layers)
+                ],
+                norm_layer=torch.nn.LayerNorm(configs.d_model)
+            )
+        else:
+            # Transformer Encoder Attention gốc
+            self.encoder = Encoder(
+                [
+                    EncoderLayer(
+                        AttentionLayer(
+                            FullAttention(False, configs.factor, attention_dropout=configs.dropout,
+                                          output_attention=False),
+                            configs.d_model, configs.n_heads),
+                        AttentionLayer(
+                            FullAttention(False, configs.factor, attention_dropout=configs.dropout,
+                                          output_attention=False),
+                            configs.d_model, configs.n_heads),
+                        configs.d_model,
+                        configs.d_ff,
+                        dropout=configs.dropout,
+                        activation=configs.activation,
+                    )
+                    for l in range(configs.e_layers)
+                ],
+                norm_layer=torch.nn.LayerNorm(configs.d_model)
+            )
+
         self.head_nf = configs.d_model * (self.patch_num + 1)
         self.head = FlattenHead(configs.enc_in, self.head_nf, configs.pred_len,
                                 head_dropout=configs.dropout)

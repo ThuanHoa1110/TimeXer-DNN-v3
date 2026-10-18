@@ -23,8 +23,8 @@ if __name__ == '__main__':
                         help='task name, options:[long_term_forecast, short_term_forecast, imputation, classification, anomaly_detection]')
     parser.add_argument('--is_training', type=int, required=True, default=1, help='status')
     parser.add_argument('--model_id', type=str, required=True, default='test', help='model id')
-    parser.add_argument('--model', type=str, required=True, default='Autoformer',
-                        help='model name, options: [Autoformer, Transformer, TimesNet]')
+    parser.add_argument('--model', type=str, required=True, default='TimeXer_DnnV3',
+                        help='model name, options: [TimeXer_DnnV3, TimeXer, Autoformer, Transformer, TimesNet]')
 
     # data loader
     parser.add_argument('--data', type=str, required=True, default='ETTm1', help='dataset type')
@@ -84,6 +84,8 @@ if __name__ == '__main__':
                         help='down sampling method, only support avg, max, conv')
     parser.add_argument('--seg_len', type=int, default=48,
                         help='the length of segmen-wise iteration of SegRNN')
+    parser.add_argument('--encoder_type', type=str, default='dnn_v3',
+                        help='encoder backbone type for TimeXer, options: [dnn_v3, transformer]')
 
     # optimization
     parser.add_argument('--num_workers', type=int, default=10, help='data loader num workers')
