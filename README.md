@@ -17,6 +17,8 @@ Dưới đây là danh sách chi tiết các tệp mã nguồn đã được t�
 | **4** | [`run.py`](./run.py) | **Chỉnh sửa** | Dòng 26 - 28, Dòng 86 - 88 | Bổ sung đối số dòng lệnh `--encoder_type` (mặc định `'dnn_v3'`) và cập nhật danh sách mô hình hỗ trợ trong `--model`. |
 | **5** | [`scripts/forecast_exogenous/EPF/TimeXer_DnnV3.sh`](./scripts/forecast_exogenous/EPF/TimeXer_DnnV3.sh) | **Tạo mới** | Toàn bộ file | Bash script cấu hình chạy huấn luyện và đánh giá mô hình `TimeXer_DnnV3` trên tập dữ liệu EPF (NP). |
 | **6** | [`run_test_dnn_v3.py`](./run_test_dnn_v3.py) | **Tạo mới** | Toàn bộ file | Unit test script kiểm tra tính toàn vẹn của tensor flow, shape đầu vào/đầu ra cho cả nhiệm vụ đơn biến (MS) và đa biến (M). |
+| **7** | [`README.md`](./README.md) | **Cập nhật** | Phần đầu README | Tài liệu báo cáo chính thức chỉ rõ toàn bộ các vị trí đã chỉnh sửa, sơ đồ phân tích kiến trúc mạng DNN-v3 và hướng dẫn chạy thực nghiệm theo yêu cầu của giảng viên. |
+| **8** | [`.gitignore`](./.gitignore) | **Tạo mới** | Toàn bộ file | Cấu hình loại trừ các tệp rác, thư mục cache Python (`__pycache__/`, `*.pyc`), file checkpoint tạm để giữ repository sạch sẽ, chuẩn chỉ khi submit lên GitHub. |
 
 ---
 
