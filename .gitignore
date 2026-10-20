@@ -24,3 +24,4 @@ results/
 test_results/
 .idea/
 .vscode/
+.venv/

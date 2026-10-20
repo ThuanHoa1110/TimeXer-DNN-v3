@@ -1,0 +1,24 @@
+### Title:
+Private Face Biometrics Time Series Dataset for TimeXer (65TTNT)
+
+### Subtitle:
+Time-series forecasting with exogenous covariates: predicting head yaw from biometric cues.
+
+### Description:
+## Bối cảnh (Context)
+Bộ dữ liệu chuỗi thời gian cá nhân (Private Time Series Dataset) được xây dựng phục vụ bài toán dự báo chuỗi thời gian có kết hợp biến ngoại sinh (Time Series Forecasting with Exogenous Variables) theo mô hình TimeXer (NeurIPS 2024), trong khuôn khổ học phần **Chuyên đề Trí tuệ nhân tạo và Khoa học dữ liệu (Lớp 65TTNT - Đại học Thủy Lợi)**.
+
+## Bài toán nghiên cứu (Task Formulation)
+- **Nhiệm vụ:** Dự báo góc quay đầu của người dùng (`head_yaw`) trong tương lai dựa trên dữ liệu lịch sử và các tín hiệu sinh trắc học khuôn mặt thu nhận qua webcam.
+- **Biến nội sinh (Endogenous Target):**
+  - `head_yaw`: Góc xoay ngang của đầu (đơn vị: độ). Đây là đại lượng mục tiêu cần dự báo.
+- **Các biến ngoại sinh (Exogenous Covariates):**
+  - `ambient_light`: Cường độ ánh sáng môi trường / độ sáng khung hình (chuẩn hóa 0.15 - 1.0).
+  - `eye_aspect_ratio` (EAR): Chỉ số mở mắt (chỉ báo mức độ tỉnh táo hoặc mệt mỏi theo thời gian).
+  - `mouth_open_ratio`: Tỷ lệ mở miệng (chỉ báo khi người dùng nói chuyện hoặc ngáp).
+
+## Cấu trúc dữ liệu (Data Schema)
+- Số lượng bản ghi: 15,000 dòng.
+- Tần số lấy mẫu: 5.0 Hz (chu kỳ 200ms / mẫu).
+- Thời gian thu thập liên tục, không có giá trị khuyết thiếu (zero missing values / NaN).
+- Định dạng: Tệp tin CSV chuẩn (`private_dataset.csv`).
