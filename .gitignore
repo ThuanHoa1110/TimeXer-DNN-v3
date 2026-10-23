@@ -26,3 +26,5 @@ test_results/
 .vscode/
 .venv/
 /real_weather_large_dataset.csv
+data/stations/
+*.csv.gz
