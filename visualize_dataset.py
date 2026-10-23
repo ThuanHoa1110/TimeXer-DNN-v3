@@ -3,7 +3,7 @@
 SCRIPT TRỰC QUAN HÓA TOÀN BỘ DỮ LIỆU ĐỀ TÀI (KAGGLE VISUALIZATION RUNNER)
 Học phần: Chuyên đề Trí tuệ nhân tạo và Khoa học dữ liệu (65TTNT - Đại học Thủy Lợi)
 Nhiệm vụ 2:
-  1. Trực quan hóa Dataset Quy mô lớn: real_weather_large_dataset.csv (87,672 dòng, 10 năm)
+  1. Trực quan hóa Dataset Quy mô lớn: real_weather_large_dataset.csv (1,052,064 dòng, 10 năm)
   2. Trực quan hóa Dataset Bổ trợ: private_dataset.csv (15,000 dòng)
   3. Xuất toàn bộ biểu đồ chuẩn học thuật (300 DPI) vào thư mục figures/
 ========================================================================================

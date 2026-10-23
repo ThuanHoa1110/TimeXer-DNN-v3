@@ -1,5 +1,5 @@
 """
-Script trực quan hóa dữ liệu khí tượng Hà Nội 10 năm (real_weather_large_dataset.csv)
+Script trực quan hóa dữ liệu khí tượng Hà Nội 10 năm (real_weather_large_dataset.csv - 1,052,064 dòng, 5 phút)
 Thiết kế theo chuẩn báo cáo khoa học quốc tế (Academic / Journal Style)
 Tự động xuất 6 biểu đồ phân tích chuyên sâu 300 DPI vào thư mục figures/
 """
