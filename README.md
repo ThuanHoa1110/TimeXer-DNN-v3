@@ -66,6 +66,39 @@ Theo yêu cầu khắc phục nhận xét của giảng viên (*"Data của em �
 <img src="./figures/multistation_05_volume_breakdown_6million.png" width="95%" alt="Volume Breakdown" />
 </p>
 
+### 🎓 BỘ 5 BIỂU ĐỒ ĐỐI SÁNH TRỰC QUAN HÓA BÁM SÁT 100% PAPER GỐC TIMEXER (NEURIPS 2024)
+*(Theo đúng phương pháp luận nghiên cứu và các dạng đồ thị chuẩn của bài báo TimeXer - Yuxuan Wang et al., Tsinghua University)*:
+
+#### Hình P1: Định nghĩa bài toán Biến Nội sinh (Endogenous Target) & Biến Ngoại sinh (Exogenous Drivers)
+*(Tái hiện chuẩn Paper Fig 1 & Fig 4: Sơ đồ mạng lưới không gian và chuỗi thời gian Look-back $L=7$ ngày vs Forecast $H=3$ ngày)*
+<p align="center">
+<img src="./figures/timexer_paper_fig1_formulation.png" width="95%" alt="TimeXer Paper Formulation" />
+</p>
+
+#### Hình P2: Showcase Dự báo & Đánh giá Điểm uốn (Inflection Points Evaluation)
+*(Tái hiện chuẩn Paper Fig 11 & Fig 12: Đánh dấu Vòng tròn Xanh lá $\bigcirc$ cho điểm uốn chính xác và Vòng tròn Đỏ $\bigcirc$ cho thất bại khi thiếu biến ngoại sinh)*
+<p align="center">
+<img src="./figures/timexer_paper_fig2_inflection_showcase.png" width="95%" alt="TimeXer Inflection Showcase" />
+</p>
+
+#### Hình P3: Bản đồ trọng số Cross-Attention Variate-wise theo Kịch bản Thời tiết
+*(Tái hiện chuẩn Paper Section 4.4 & Fig 5: Minh chứng tính giải thích (Interpretability) giữa Global Token và các biến ngoại sinh)*
+<p align="center">
+<img src="./figures/timexer_paper_fig3_cross_attention_map.png" width="95%" alt="TimeXer Cross-Attention Heatmap" />
+</p>
+
+#### Hình P4: Phân tích độ trễ tương quan nhân quả không gian (Causal Time-Lag)
+*(Tái hiện chuẩn Paper Section 1 & Fig 1 Left: Giải quyết vấn đề Temporal Misalignment giữa trạm ngoại sinh đầu gió và trạm nội sinh hạ lưu)*
+<p align="center">
+<img src="./figures/timexer_paper_fig4_causal_lag_analysis.png" width="95%" alt="TimeXer Causal Time-Lag" />
+</p>
+
+#### Hình P5: Đánh giá Khả năng Mở rộng (Scalability Benchmark) trên 6.3 triệu bản ghi
+*(Tái hiện chuẩn Paper Section 4.3.2 & Fig 8: Mở rộng Look-back Horizon $L \in \{96..720\}$ và Độ phức tạp bộ nhớ GPU tuyến tính $\mathcal{O}(C)$)*
+<p align="center">
+<img src="./figures/timexer_paper_fig5_scalability_benchmark.png" width="95%" alt="TimeXer Scalability Benchmark" />
+</p>
+
 ## 🔬 Phân tích chi tiết Hàm mất mát DINO-v3 (DINO-v3 Loss Function)
 
 Điểm cốt lõi khiến mô hình DINO-v3 (Meta FAIR 2025) vượt trội hơn các mô hình tự giám sát thông thường là **Hàm mất mát tích hợp đa mục tiêu (Composite Loss Function)**:
