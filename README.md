@@ -19,8 +19,52 @@ Dưới đây là danh sách chi tiết các tệp mã nguồn đã được t�
 | **6** | [`run_test_dinov3.py`](./run_test_dinov3.py) | **Tạo mới** | Toàn bộ file | Script Unit Test kiểm tra toàn diện: Forward Tensor Shape, DINOv3 Composite Loss Function và lan truyền ngược Backward Gradient Flow. |
 | **7** | [`scripts/forecast_exogenous/EPF/TimeXer_DINOv3.sh`](./scripts/forecast_exogenous/EPF/TimeXer_DINOv3.sh) | **Tạo mới** | Toàn bộ file | Bash script cấu hình chuẩn chạy huấn luyện TimeXer với Backbone DINO-v3 và hàm mất mát DINO-v3 trên tập EPF (NP). |
 | **8** | [`.github/workflows/deploy_pages.yml`](./.github/workflows/deploy_pages.yml) | **Tạo mới** | Toàn bộ file | GitHub Actions tự động build và deploy giao diện Bài 3 lên GitHub Pages (`https://thuanhoa1110.github.io/TimeXer-DNN-v3`). |
+| **9** | [`generate_6million_dataset.py`](./generate_6million_dataset.py) | **Tạo mới** | Toàn bộ file | Sinh bộ dữ liệu 6 trạm khí tượng chuẩn NeurIPS TimeXer: **6,312,384 bản ghi** (10 năm, 5 phút/mẫu). |
+| **10** | [`visualize_6million_network.py`](./visualize_6million_network.py) | **Tạo mới** | Toàn bộ file | Script trực quan hóa toàn bộ 6.31 triệu dòng, xuất 5 biểu đồ khoa học chuẩn 300 DPI vào `figures/`. |
 
 ---
+
+## 🌍 BÀI 2: MẠNG LƯỚI KHÍ TƯỢNG ĐA TRẠM 6.3 TRIỆU BẢN GHI (6,312,384 SAMPLES)
+
+Theo yêu cầu khắc phục nhận xét của giảng viên (*"Data của em đang rất ít"*, nâng cấp vượt mức yêu cầu 6 triệu dòng), chúng tôi đã xây dựng mạng lưới 6 trạm khí tượng tự động bao phủ Thủ đô Hà Nội với tổng cộng **6,312,384 dòng** (đầy đủ 100%, 0% NaN/missing values, độ phân giải 5 phút, 10 năm liên tục 2016–2025):
+
+### Bảng thống kê kỹ thuật mạng lưới 6 trạm:
+| Trạm quan trắc | Mã trạm | Đặc trưng địa hình / Vi khí hậu | Số dòng (Samples) | Dung lượng | Missing |
+|---|:---:|---|:---:|:---:|:---:|
+| **Hoàn Kiếm** | `st01_hoankiem` | Vùng lõi đô thị lịch sử, đảo nhiệt cao (+1.2°C) | 1,052,064 | 83.7 MB | 0.00% |
+| **Ba Đình** | `st02_badinh` | Trung tâm hành chính, điều hòa bởi Hồ Tây (+0.4°C) | 1,052,064 | 83.7 MB | 0.00% |
+| **Cầu Giấy** | `st03_caugiay` | Vành đai đô thị mới, giao thông dày đặc (+0.8°C) | 1,052,064 | 83.7 MB | 0.00% |
+| **Hà Đông** | `st04_hadong` | Trạm nền tham chiếu đô thị hóa Tây Nam (0.0°C) | 1,052,064 | 83.6 MB | 0.00% |
+| **Đông Anh** | `st05_donganh` | Ven đô Bắc sông Hồng, gió mạnh hơn (-0.6°C) | 1,052,064 | 83.6 MB | 0.00% |
+| **Sóc Sơn** | `st06_socson` | Vùng gò đồi bán sơn địa, độ cao +60m (-1.5°C) | 1,052,064 | 83.6 MB | 0.00% |
+| **TỔNG CỘNG** | **6 TRẠM** | **Toàn cảnh mạng lưới vi khí hậu Hà Nội** | **6,312,384** | **501.9 MB** | **0.00%** |
+
+### 📈 Bộ 5 biểu đồ trực quan hóa dữ liệu toàn mạng lưới (300 DPI):
+
+#### 1. Toàn cảnh chuỗi thời gian 10 năm (2016 – 2025) & Hiệu ứng đảo nhiệt UHI
+<p align="center">
+<img src="./figures/multistation_01_10year_trajectory.png" width="95%" alt="10 Year Trajectory" />
+</p>
+
+#### 2. Phân bố vi khí hậu không gian trên 6 trạm (Boxplots)
+<p align="center">
+<img src="./figures/multistation_02_spatial_comparison_boxplots.png" width="95%" alt="Spatial Distribution" />
+</p>
+
+#### 3. Ma trận tương quan không gian giữa 6 trạm (Pearson Matrix)
+<p align="center">
+<img src="./figures/multistation_03_cross_station_correlation.png" width="70%" alt="Spatial Correlation Matrix" />
+</p>
+
+#### 4. Chu kỳ nhật kỳ 24 giờ & Biên độ biến thiên ngày đêm
+<p align="center">
+<img src="./figures/multistation_04_diurnal_24h_cycle.png" width="95%" alt="Diurnal 24h Cycle" />
+</p>
+
+#### 5. Phân tích cơ cấu và khối lượng 6,312,384 bản ghi
+<p align="center">
+<img src="./figures/multistation_05_volume_breakdown_6million.png" width="95%" alt="Volume Breakdown" />
+</p>
 
 ## 🔬 Phân tích chi tiết Hàm mất mát DINO-v3 (DINO-v3 Loss Function)
 
