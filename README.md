@@ -21,6 +21,7 @@ Dưới đây là danh sách chi tiết các tệp mã nguồn đã được t�
 | **8** | [`.github/workflows/deploy_pages.yml`](./.github/workflows/deploy_pages.yml) | **Tạo mới** | Toàn bộ file | GitHub Actions tự động build và deploy giao diện Bài 3 lên GitHub Pages (`https://thuanhoa1110.github.io/TimeXer-DNN-v3`). |
 | **9** | [`generate_6million_dataset.py`](./generate_6million_dataset.py) | **Tạo mới** | Toàn bộ file | Sinh bộ dữ liệu 6 trạm khí tượng chuẩn NeurIPS TimeXer: **6,312,384 bản ghi** (10 năm, 5 phút/mẫu). |
 | **10** | [`visualize_6million_network.py`](./visualize_6million_network.py) | **Tạo mới** | Toàn bộ file | Script trực quan hóa toàn bộ 6.31 triệu dòng, xuất 5 biểu đồ khoa học chuẩn 300 DPI vào `figures/`. |
+| **11** | [`visualize_timexer_paper_benchmark.py`](./visualize_timexer_paper_benchmark.py) | **Tạo mới** | Toàn bộ file | Trực quan hóa bám sát 100% Paper TimeXer (NeurIPS 2024): Đánh giá điểm uốn (Inflection points), Cross-Attention, độ trễ nhân quả và Scalability. |
 
 ---
 
