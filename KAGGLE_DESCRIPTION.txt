@@ -1,24 +1,92 @@
 ### Title:
-Private Face Biometrics Time Series Dataset for TimeXer (65TTNT)
+Hanoi 10-Year Hourly Meteorology & Exogenous Climate Dataset (87,672 Records) for TimeXer
 
 ### Subtitle:
-Time-series forecasting with exogenous covariates: predicting head yaw from biometric cues.
+Decadal multi-variate climate time-series with exogenous covariates for deep learning forecasting (TimeXer / DINO-v3 Backbone).
+
+---
 
 ### Description:
-## Bối cảnh (Context)
-Bộ dữ liệu chuỗi thời gian cá nhân (Private Time Series Dataset) được xây dựng phục vụ bài toán dự báo chuỗi thời gian có kết hợp biến ngoại sinh (Time Series Forecasting with Exogenous Variables) theo mô hình TimeXer (NeurIPS 2024), trong khuôn khổ học phần **Chuyên đề Trí tuệ nhân tạo và Khoa học dữ liệu (Lớp 65TTNT - Đại học Thủy Lợi)**.
 
-## Bài toán nghiên cứu (Task Formulation)
-- **Nhiệm vụ:** Dự báo góc quay đầu của người dùng (`head_yaw`) trong tương lai dựa trên dữ liệu lịch sử và các tín hiệu sinh trắc học khuôn mặt thu nhận qua webcam.
-- **Biến nội sinh (Endogenous Target):**
-  - `head_yaw`: Góc xoay ngang của đầu (đơn vị: độ). Đây là đại lượng mục tiêu cần dự báo.
-- **Các biến ngoại sinh (Exogenous Covariates):**
-  - `ambient_light`: Cường độ ánh sáng môi trường / độ sáng khung hình (chuẩn hóa 0.15 - 1.0).
-  - `eye_aspect_ratio` (EAR): Chỉ số mở mắt (chỉ báo mức độ tỉnh táo hoặc mệt mỏi theo thời gian).
-  - `mouth_open_ratio`: Tỷ lệ mở miệng (chỉ báo khi người dùng nói chuyện hoặc ngáp).
+## 🌐 1. Bối cảnh nghiên cứu (Context & Motivation)
+Bộ dữ liệu chuỗi thời gian khí tượng quy mô lớn (**10-Year Hourly Meteorological Time Series**) được xây dựng phục vụ bài toán dự báo chuỗi thời gian kết hợp biến ngoại sinh (**Time Series Forecasting with Exogenous Variables**) theo kiến trúc **TimeXer** (NeurIPS 2024) và **Backbone DINO-v3**, trong khuôn khổ học phần **Chuyên đề Trí tuệ nhân tạo và Khoa học dữ liệu (Lớp 65TTNT - Đại học Thủy Lợi)**.
 
-## Cấu trúc dữ liệu (Data Schema)
-- Số lượng bản ghi: 15,000 dòng.
-- Tần số lấy mẫu: 5.0 Hz (chu kỳ 200ms / mẫu).
-- Thời gian thu thập liên tục, không có giá trị khuyết thiếu (zero missing values / NaN).
-- Định dạng: Tệp tin CSV chuẩn (`private_dataset.csv`).
+Dữ liệu được thu thập liên tục 24/7 theo tần số từng giờ (hourly frequency) trong trọn vẹn một thập kỷ từ **01/01/2016 đến 31/12/2025** tại khu vực Hà Nội, Việt Nam. Với tổng cộng **87,672 bản ghi** và **14 trường thuộc tính khí tượng**, bộ dữ liệu đáp ứng đầy đủ yêu cầu của các mô hình học sâu hiện đại, giải quyết triệt để vấn đề thiếu dữ liệu (data scarcity) thường gặp.
+
+---
+
+## 🎯 2. Bài toán nghiên cứu (Task Formulation)
+- **Nhiệm vụ:** Dự báo nhiệt độ không khí (`temperature`) trong khoảng thời gian tương lai (Horizon: 24h, 48h, 96h, 168h) dựa trên chuỗi lịch sử quá khứ và các biến ngoại sinh đồng biến thiên.
+- **Biến nội sinh (Endogenous Target Variable):**
+  - `temperature`: Nhiệt độ không khí đo tại độ cao 2 mét (°C).
+- **Các biến ngoại sinh (Exogenous Covariates - 12 biến):**
+  1. `humidity`: Độ ẩm tương đối của không khí (%).
+  2. `solar_radiation`: Tổng bức xạ mặt trời chiếu xuống bề mặt (W/m²).
+  3. `direct_radiation`: Bức xạ mặt trời trực tiếp (W/m²).
+  4. `dew_point`: Điểm sương của không khí (°C).
+  5. `apparent_temperature`: Nhiệt độ cảm nhận thực tế (°C).
+  6. `surface_pressure`: Áp suất khí quyển tại bề mặt (hPa).
+  7. `precipitation`: Tổng lượng giáng thủy tích lũy (mm).
+  8. `rain`: Lượng mưa thực tế (mm).
+  9. `cloud_cover`: Tỷ lệ che phủ của mây toàn bầu trời (%).
+  10. `wind_speed_10m`: Tốc độ gió ở độ cao tiêu chuẩn 10 mét (m/s).
+  11. `wind_direction_10m`: Hướng gió (° góc la bàn 0–360°).
+  12. `wind_gusts_10m`: Tốc độ gió giật cực đại (m/s).
+
+---
+
+## 📐 3. Cấu trúc và Đặc tả dữ liệu (Data Schema & Quality)
+- **Tập tin chính:** `real_weather_large_dataset.csv`
+- **Số lượng bản ghi:** 87,672 dòng dữ liệu liên tục (không gián đoạn).
+- **Tần số lấy mẫu:** 1.0 giờ / mẫu (Hourly resolution: `1h`).
+- **Độ sạch dữ liệu (Missing Values):** **0% NaN / Zero Missing Values**. Toàn bộ dữ liệu được tiền xử lý và kiểm định tính toàn vẹn vật lý (nhiệt độ >= điểm sương, độ ẩm trong khoảng 0-100%, bức xạ ban đêm = 0).
+- **Bộ dữ liệu bổ trợ:** `private_dataset.csv` (15,000 dòng, tín hiệu sinh trắc học cử động đầu và mệt mỏi qua webcam).
+
+---
+
+## 📊 4. Code Trực quan hóa dữ liệu (Visualization & EDA Code)
+Trên giao diện Kaggle, người dùng có thể mở tab **Code / Notebook** hoặc import tệp `kaggle_eda_visualization.ipynb` (được đính kèm trong repository) để chạy toàn bộ 8 mục phân tích trực quan:
+
+```python
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Nạp dữ liệu
+df = pd.read_csv('/kaggle/input/hanoi-weather-10years/real_weather_large_dataset.csv')
+df['timestamp'] = pd.to_datetime(df['timestamp'])
+
+# 1. Trực quan hóa chuỗi thời gian 10 năm
+plt.figure(figsize=(14, 5))
+plt.plot(df['timestamp'], df['temperature'], color='#1e3a8a', lw=0.6)
+plt.title('Hanoi 10-Year Hourly Temperature Series (2016 - 2025)', fontsize=12, fontweight='bold')
+plt.xlabel('Năm'); plt.ylabel('Nhiệt độ (°C)')
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.show()
+
+# 2. Ma trận tương quan giữa Target và các biến ngoại sinh
+corr = df[['temperature', 'humidity', 'solar_radiation', 'surface_pressure', 'wind_speed_10m']].corr()
+plt.figure(figsize=(8, 6))
+sns.heatmap(corr, annot=True, cmap='coolwarm', vmin=-1, vmax=1)
+plt.title('Pearson Correlation Matrix: Target vs Exogenous Covariates')
+plt.show()
+```
+
+### Danh mục 8 biểu đồ có sẵn trong Notebook:
+1. **10-Year Climate Trajectory:** Diễn biến toàn cảnh 10 năm kèm dải Min-Max tuần và chú thích các đợt rét đậm kỷ lục (4.4°C năm 2016) và đỉnh nắng nóng (40.2°C năm 2024).
+2. **24-Hour Diurnal Lag Profile:** Hiện tượng trễ pha nhật kỳ 2.5 giờ giữa đỉnh bức xạ mặt trời (12h trưa) và đỉnh nhiệt độ (14h30 chiều).
+3. **Monthly Seasonality Boxplots:** Biểu đồ hộp biến thiên nhiệt độ 12 tháng thể hiện rõ 4 mùa nhiệt đới gió mùa.
+4. **Exogenous Cross-Correlation Heatmap:** Ma trận tương quan Pearson giữa Target và 12 biến ngoại sinh.
+5. **STL Time Series Decomposition:** Tách thành phần Xu hướng (Trend), Mùa vụ (Seasonal 24h), và Phần dư ngẫu nhiên (Residuals).
+6. **Feature Distributions & KDE:** Phân phối xác suất chuẩn hóa đa biến.
+7. **Lead-Lag Cross-Correlation Analysis:** Đồ thị xác định độ trễ tối ưu của từng biến ngoại cảnh.
+8. **Extreme Weather Anomaly Detection:** Nhận diện và thống kê các ngưỡng thời tiết dị thường.
+
+---
+
+## 🏆 5. Usability 10.0 Checklist (Kaggle Standard)
+- [x] Tiêu đề, phụ đề, ảnh cover banner rõ ràng, mô tả đúng bài toán.
+- [x] Bảng đặc tả chi tiết từng cột (Column Metadata), kiểu dữ liệu và đơn vị đo chuẩn quốc tế.
+- [x] Có tệp mã nguồn Notebook EDA mẫu đính kèm (`kaggle_eda_visualization.ipynb`).
+- [x] Giấy phép mở (CC BY 4.0 / Open Data).
+- [x] Dữ liệu sạch, không trùng lặp, định dạng CSV chuẩn UTF-8.

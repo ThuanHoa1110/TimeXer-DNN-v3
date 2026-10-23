@@ -33,7 +33,20 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         return model_optim
 
     def _select_criterion(self):
-        criterion = nn.MSELoss()
+        loss_name = getattr(self.args, 'loss', 'MSE')
+        if loss_name in ['dino_v3', 'dino', 'DINOv3'] or getattr(self.args, 'model', '') in ['TimeXer_DINOv3', 'DINO_v3', 'DINOv3']:
+            from models.TimeXer_DINOv3 import DINOv3Loss
+            criterion = DINOv3Loss(
+                task_criterion=nn.MSELoss(),
+                student_temp=getattr(self.args, 'dino_temp_s', 0.1),
+                teacher_temp=getattr(self.args, 'dino_temp_t', 0.04),
+                lambda_distill=getattr(self.args, 'dino_lambda_distill', 0.1),
+                lambda_gram=getattr(self.args, 'dino_lambda_gram', 0.05)
+            )
+        elif loss_name == 'MAE':
+            criterion = nn.L1Loss()
+        else:
+            criterion = nn.MSELoss()
         return criterion
 
     def vali(self, vali_data, vali_loader, criterion):
@@ -70,8 +83,10 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 true = batch_y.detach().cpu()
 
                 loss = criterion(pred, true)
+                if isinstance(loss, tuple):
+                    loss = loss[0]
 
-                total_loss.append(loss)
+                total_loss.append(loss.item() if hasattr(loss, 'item') else loss)
         total_loss = np.average(total_loss)
         self.model.train()
         return total_loss
@@ -127,7 +142,12 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                         outputs = outputs[:, -self.args.pred_len:, f_dim:]
                         batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
                         loss = criterion(outputs, batch_y)
-                        train_loss.append(loss.item())
+                        if isinstance(loss, tuple):
+                            loss, loss_details = loss
+                            train_loss.append(loss_details['loss_total'])
+                        else:
+                            loss_details = None
+                            train_loss.append(loss.item())
                 else:
                     if self.args.output_attention:
                         outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)[0]
@@ -138,10 +158,19 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     outputs = outputs[:, -self.args.pred_len:, f_dim:]
                     batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
                     loss = criterion(outputs, batch_y)
-                    train_loss.append(loss.item())
+                    if isinstance(loss, tuple):
+                        loss, loss_details = loss
+                        train_loss.append(loss_details['loss_total'])
+                    else:
+                        loss_details = None
+                        train_loss.append(loss.item())
 
                 if (i + 1) % 100 == 0:
-                    print("\titers: {0}, epoch: {1} | loss: {2:.7f}".format(i + 1, epoch + 1, loss.item()))
+                    if loss_details is not None:
+                        print("\titers: {0}, epoch: {1} | Total Loss: {2:.6f} [Task: {3:.6f}, Distill: {4:.6f}, Gram: {5:.6f}]".format(
+                            i + 1, epoch + 1, loss_details['loss_total'], loss_details['loss_task'], loss_details['loss_distill'], loss_details['loss_gram']))
+                    else:
+                        print("\titers: {0}, epoch: {1} | loss: {2:.7f}".format(i + 1, epoch + 1, loss.item()))
                     speed = (time.time() - time_now) / iter_count
                     left_time = speed * ((self.args.train_epochs - epoch) * train_steps - i)
                     print('\tspeed: {:.4f}s/iter; left time: {:.4f}s'.format(speed, left_time))

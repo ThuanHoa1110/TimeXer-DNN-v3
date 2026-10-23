@@ -3,7 +3,7 @@ import torch
 from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
     Informer, LightTS, Reformer, ETSformer, Pyraformer, PatchTST, MICN, Crossformer, FiLM, iTransformer, \
     Koopa, TiDE, FreTS, TimeMixer, TSMixer, SegRNN, MambaSimple, TemporalFusionTransformer, SCINet, TimeXer, \
-    TimeXer_DnnV3
+    TimeXer_DnnV3, TimeXer_DINOv3
 
 
 class Exp_Basic(object):
@@ -36,6 +36,9 @@ class Exp_Basic(object):
             'TemporalFusionTransformer': TemporalFusionTransformer,
             "SCINet": SCINet,
             'TimeXer': TimeXer,
+            'TimeXer_DINOv3': TimeXer_DINOv3,
+            'DINO_v3': TimeXer_DINOv3,
+            'DINOv3': TimeXer_DINOv3,
             'TimeXer_DnnV3': TimeXer_DnnV3,
             'Dnn_v3': TimeXer_DnnV3
         }

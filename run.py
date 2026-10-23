@@ -23,8 +23,8 @@ if __name__ == '__main__':
                         help='task name, options:[long_term_forecast, short_term_forecast, imputation, classification, anomaly_detection]')
     parser.add_argument('--is_training', type=int, required=True, default=1, help='status')
     parser.add_argument('--model_id', type=str, required=True, default='test', help='model id')
-    parser.add_argument('--model', type=str, required=True, default='TimeXer_DnnV3',
-                        help='model name, options: [TimeXer_DnnV3, TimeXer, Autoformer, Transformer, TimesNet]')
+    parser.add_argument('--model', type=str, required=True, default='TimeXer_DINOv3',
+                        help='model name, options: [TimeXer_DINOv3, TimeXer_DnnV3, TimeXer, Autoformer, Transformer, TimesNet]')
 
     # data loader
     parser.add_argument('--data', type=str, required=True, default='ETTm1', help='dataset type')
@@ -84,8 +84,8 @@ if __name__ == '__main__':
                         help='down sampling method, only support avg, max, conv')
     parser.add_argument('--seg_len', type=int, default=48,
                         help='the length of segmen-wise iteration of SegRNN')
-    parser.add_argument('--encoder_type', type=str, default='dnn_v3',
-                        help='encoder backbone type for TimeXer, options: [dnn_v3, transformer]')
+    parser.add_argument('--encoder_type', type=str, default='dino_v3',
+                        help='encoder backbone type for TimeXer, options: [dino_v3, dnn_v3, transformer]')
 
     # optimization
     parser.add_argument('--num_workers', type=int, default=10, help='data loader num workers')
@@ -95,7 +95,11 @@ if __name__ == '__main__':
     parser.add_argument('--patience', type=int, default=3, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0001, help='optimizer learning rate')
     parser.add_argument('--des', type=str, default='test', help='exp description')
-    parser.add_argument('--loss', type=str, default='MSE', help='loss function')
+    parser.add_argument('--loss', type=str, default='dino_v3', help='loss function, options: [dino_v3, MSE, MAE]')
+    parser.add_argument('--dino_temp_s', type=float, default=0.1, help='DINO-v3 student temperature')
+    parser.add_argument('--dino_temp_t', type=float, default=0.04, help='DINO-v3 teacher temperature')
+    parser.add_argument('--dino_lambda_distill', type=float, default=0.1, help='DINO-v3 self-distillation loss weight')
+    parser.add_argument('--dino_lambda_gram', type=float, default=0.05, help='DINO-v3 Gram anchoring loss weight')
     parser.add_argument('--lradj', type=str, default='type1', help='adjust learning rate')
     parser.add_argument('--use_amp', action='store_true', help='use automatic mixed precision training', default=False)
 

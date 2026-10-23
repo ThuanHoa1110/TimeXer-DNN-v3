@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from layers.SelfAttention_Family import FullAttention, AttentionLayer
 from layers.Embed import DataEmbedding_inverted, PositionalEmbedding
+from models.TimeXer_DINOv3 import DINOv3_Block, DINOv3_Encoder, DINOv3Loss
 import numpy as np
 
 
@@ -231,10 +232,21 @@ class Model(nn.Module):
         self.ex_embedding = DataEmbedding_inverted(configs.seq_len, configs.d_model, configs.embed, configs.freq,
                                                    configs.dropout)
 
-        # [CẬP NHẬT YÊU CẦU 1] Thay Encoder (hoặc backbone) bằng DNN-v3
-        self.encoder_type = getattr(configs, 'encoder_type', 'dnn_v3')
-        if self.encoder_type == 'dnn_v3':
-            # Khởi tạo Encoder Backbone DNN-v3
+        # [CẬP NHẬT YÊU CẦU 1] Thay Encoder (hoặc backbone) bằng DINO-v3 kèm Loss Function
+        self.encoder_type = getattr(configs, 'encoder_type', 'dino_v3')
+        if self.encoder_type in ['dino_v3', 'dino']:
+            # Khởi tạo Encoder Backbone DINO-v3 chuẩn Meta FAIR (LayerScale + MHSA + Exogenous Cross-Fusion)
+            n_heads = getattr(configs, 'n_heads', 8)
+            self.encoder = DINOv3_Encoder(
+                layers=configs.e_layers,
+                d_model=configs.d_model,
+                n_heads=n_heads,
+                d_ff=configs.d_ff,
+                dropout=configs.dropout,
+                out_dim=256
+            )
+        elif self.encoder_type == 'dnn_v3':
+            # Khởi tạo Encoder Backbone DNN-v3 (tương thích ngược)
             self.encoder = DNN_v3_Encoder(
                 [
                     DNN_v3_Layer(
@@ -269,6 +281,16 @@ class Model(nn.Module):
                 ],
                 norm_layer=torch.nn.LayerNorm(configs.d_model)
             )
+
+        # Tích hợp DINO-v3 Composite Loss Function
+        self.loss_fn = DINOv3Loss(
+            task_criterion=nn.MSELoss(),
+            student_temp=getattr(configs, 'dino_temp_s', 0.1),
+            teacher_temp=getattr(configs, 'dino_temp_t', 0.04),
+            lambda_distill=getattr(configs, 'dino_lambda_distill', 0.1),
+            lambda_gram=getattr(configs, 'dino_lambda_gram', 0.05),
+            out_dim=256
+        )
 
         self.head_nf = configs.d_model * (self.patch_num + 1)
         self.head = FlattenHead(configs.enc_in, self.head_nf, configs.pred_len,
