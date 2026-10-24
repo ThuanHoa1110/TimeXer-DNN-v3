@@ -48,23 +48,37 @@
 
 ---
 
-### 3️⃣ BÀI 3: Hệ thống Deploy Hoàn chỉnh & Link Hoạt động 100%
-Để đảm bảo thầy truy cập **không bao giờ gặp lỗi 404 hoặc server bị tắt**, hệ thống đã được triển khai qua các kênh chính thức:
+### 3️⃣ BÀI 3: Hệ thống Giao diện Web Dự báo Khí tượng & Triển khai Deploy Hoàn chỉnh
 
-#### 🔗 KÊNH 1: GitHub Pages (Chính thức qua GitHub Actions)
-- **Đường dẫn trực tiếp:**  
-  👉 **[https://thuanhoa1110.github.io/TimeXer-DNN-v3/](https://thuanhoa1110.github.io/TimeXer-DNN-v3/)**
-- **Cơ chế:** Quy trình CI/CD [`.github/workflows/deploy_pages.yml`](./.github/workflows/deploy_pages.yml) tự động xuất bản `index.html` lên hệ thống máy chủ toàn cầu của GitHub mỗi khi sinh viên đẩy commit.
-- **Trạng thái:** Tự động kích hoạt, hoạt động vĩnh viễn 24/7, không bao giờ ngủ (zero downtime).
+#### A. Phân tích Nghiệp vụ Bài toán Cốt lõi (Core Business Problem)
+- **Bài toán:** Dự báo chuỗi thời gian khí tượng đa biến kết hợp biến ngoại sinh (**Multi-Station Meteorological Forecasting with Exogenous Variables**).
+- **Mục tiêu dự báo (Endogenous Target):** **Nhiệt độ không khí (°C)** tại trạm khí tượng được chỉ định.
+- **Biến ngoại sinh bổ trợ (Exogenous Drivers):** Bức xạ mặt trời ($W/m^2$), Vận tốc gió 10m ($m/s$), Độ ẩm tương đối (%), Khí áp bề mặt ($hPa$).
 
-#### 🔗 KÊNH 2: Vercel Cloud Hosting (Khuyên dùng - Dự phòng số 1)
-- Tệp cấu hình [`vercel.json`](./vercel.json) đã được tích hợp sẵn trong repo.
-- Người dùng chỉ cần ấn nút Import Repository trên Vercel, hệ thống cấp ngay tên miền:  
-  👉 **`https://airaware-timexer.vercel.app`** (hoặc `https://timexer-dnn-v3.vercel.app`)
+#### B. Tối ưu hóa Đầu vào Người dùng (Inputs - Tinh gọn, trực quan, không bắt nhập số tay)
+1. **Chọn Trạm mục tiêu (Target Station):** Dropdown 6 trạm quan trắc tự động Hà Nội (`Hoàn Kiếm`, `Ba Đình`, `Cầu Giấy`, `Hà Đông`, `Đông Anh`, `Sóc Sơn`).
+2. **Chọn Khoảng thời gian dự báo (Horizon):** 3 nút chọn nhanh: `24 giờ (1 ngày)`, `48 giờ (2 ngày)`, `72 giờ (3 ngày - Chuẩn Paper TimeXer)`.
+3. **Chọn Biến ngoại sinh tích hợp:** 4 switches/checkboxes bật/tắt bức xạ, gió, độ ẩm, khí áp.
+4. **Chọn Mô hình suy luận:** `TimeXer + DINO-v3 Loss (Đề xuất)`, `TimeXer Gốc`, `Baseline (Không ngoại sinh)`.
+5. **Nút kích hoạt:** `[ ⚡ Chạy Suy luận TimeXer ]` & `[ 🎲 Đổi tình huống mẫu (Nắng nóng / Rét đậm / Gió mùa) ]`.
 
-#### 🔗 KÊNH 3: Streamlit Community Cloud (Giao diện Python Trực quan)
-- File nguồn [`streamlit_app.py`](./streamlit_app.py) hỗ trợ chạy trực tiếp trên nền tảng đám mây Streamlit.
-- Người xem có thể tương tác đầy đủ với mô hình dự báo TimeXer-DINOv3, tùy chỉnh trạm quan trắc, số giờ dự báo và quan sát biểu đồ động.
+#### C. Thiết kế Đầu ra Hiển thị (Outputs - Chuẩn, đầy đủ, ít thành phần thừa)
+1. **Thanh 4 Thẻ KPI tóm tắt:** Nhiệt độ hiện tại, Biên độ nhiệt tương lai ($T_{\text{max}} - T_{\text{min}}$), Sai số MSE (% cải thiện so với baseline), và Tỷ lệ bắt điểm uốn Inflection Points.
+2. **Biểu đồ Dự báo Chuỗi thời gian tương tác (Interactive Canvas Chart):**
+   - Vẽ đồng thời 4 đường: *Quá khứ quan sát*, *Giá trị thực tế (Ground Truth)*, *Dự báo TimeXer-DINOv3*, và *Dự báo Baseline*.
+   - Đánh dấu **vòng tròn xanh lá ($\bigcirc$)** tại các điểm uốn đỉnh/đáy nhiệt độ theo chuẩn Paper TimeXer.
+3. **Biểu đồ đóng góp Biến Ngoại sinh (Cross-Attention Weights):** Bức xạ mặt trời (42.5%), Tốc độ gió (28.0%), Độ ẩm (18.5%), Khí áp (11.0%).
+4. **Bảng dữ liệu chi tiết theo từng mốc giờ + Nút tải file CSV dự báo.**
+
+#### D. Hướng dẫn Deploy Chi tiết (Đảm bảo Link hoạt động vĩnh viễn 24/7, Không bao giờ chết server)
+- **🔗 KÊNH 1: GitHub Pages (Chính thức qua GitHub Actions & Nhánh `gh-pages`)**
+  - **Link trực tiếp:** 👉 **[https://thuanhoa1110.github.io/TimeXer-DNN-v3/](https://thuanhoa1110.github.io/TimeXer-DNN-v3/)**
+  - Tự động kích hoạt qua file `.github/workflows/deploy_pages.yml` và nhánh `gh-pages`. Chạy 100% Client-side mượt mà, zero downtime.
+- **🔗 KÊNH 2: Vercel Cloud Hosting (Dự phòng 1-Click)**
+  - Tệp `vercel.json` đã tích hợp sẵn. Bấm Import repo trên Vercel nhận ngay link:  
+    👉 **`https://timexer-dnn-v3.vercel.app`**
+- **🔗 KÊNH 3: Streamlit Community Cloud (Dành cho bản Python tương tác)**
+  - Mã nguồn hoàn thiện tại [`streamlit_app.py`](./streamlit_app.py). Kết nối trực tiếp trên [share.streamlit.io](https://share.streamlit.io).
 
 ---
 
