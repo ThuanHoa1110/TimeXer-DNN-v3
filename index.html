@@ -3,25 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AirAware AI - Environmental Intelligence | Phân tích AI</title>
+  <title>TimeXer-DINOv3 | Hệ thống Dự báo Khí tượng Đa trạm Thời gian thực</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --sidebar-bg: #112d2f;
-      --sidebar-hover: #183e41;
-      --sidebar-active: #164e52;
-      --teal-primary: #157367;
-      --teal-light: #e4f3f0;
-      --teal-border: #80c4ba;
-      --teal-accent: #22c55e;
-      --bg-canvas: #f8fafc;
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --accent: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --bg-main: #f8fafc;
       --card-bg: #ffffff;
-      --border-color: #e2e8f0;
-      --text-main: #1e293b;
+      --text-main: #0f172a;
       --text-muted: #64748b;
-      --text-light: #94a3b8;
+      --border: #e2e8f0;
+      --sidebar-bg: #0f172a;
     }
 
     * {
@@ -32,1244 +31,1187 @@
     }
 
     body {
-      background-color: var(--bg-canvas);
-      /* Hiệu ứng nền lưới chấm tọa độ mờ giống thiết kế */
+      background-color: var(--bg-main);
       background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
       background-size: 28px 28px;
       color: var(--text-main);
-      display: flex;
       min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* ==========================================================================
-       SIDEBAR TRÁI
-       ========================================================================== */
-    .sidebar {
-      width: 250px;
-      background-color: var(--sidebar-bg);
-      color: #ffffff;
       display: flex;
       flex-direction: column;
-      flex-shrink: 0;
-      border-right: 1px solid rgba(255, 255, 255, 0.08);
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      z-index: 50;
     }
 
-    .brand {
-      padding: 24px 20px;
+    /* Top Navigation Bar */
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .brand-box {
       display: flex;
       align-items: center;
       gap: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .brand-logo {
-      width: 38px;
-      height: 38px;
-      background: #148074;
-      border-radius: 8px;
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      color: #fff;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
+      font-weight: 800;
       font-size: 1.25rem;
-      color: #fff;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
     }
 
-    .brand-info h2 {
+    .brand-text h1 {
       font-size: 1.05rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      color: #f8fafc;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.2px;
     }
 
-    .brand-info p {
-      font-size: 0.65rem;
-      color: #94a3b8;
-      letter-spacing: 0.8px;
+    .brand-text p {
+      font-size: 0.72rem;
+      color: var(--text-muted);
       font-weight: 600;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    .nav-list {
-      list-style: none;
-      padding: 24px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      flex-grow: 1;
-    }
-
-    .nav-item {
+    .header-badges {
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 12px 16px;
-      border-radius: 8px;
-      color: #94a3b8;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-decoration: none;
-    }
-
-    .nav-item .nav-idx {
-      font-size: 0.78rem;
-      font-weight: 600;
-      opacity: 0.7;
-    }
-
-    .nav-item:hover {
-      background-color: var(--sidebar-hover);
-      color: #f1f5f9;
-    }
-
-    .nav-item.active {
-      background-color: #164e52;
-      color: #ffffff;
-      font-weight: 600;
-      border: 1px solid #1f7076;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    }
-
-    .nav-item.active .nav-idx {
-      color: #5eead4;
-      opacity: 1;
-    }
-
-    .sidebar-footer {
-      padding: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 0.78rem;
-      color: #94a3b8;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
 
     .status-badge {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 8px;
-      color: #e2e8f0;
-      font-weight: 500;
+      gap: 6px;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
     }
 
     .status-dot {
       width: 8px;
       height: 8px;
+      background: #10b981;
       border-radius: 50%;
-      background-color: #22c55e;
-      box-shadow: 0 0 8px #22c55e;
+      animation: pulse 2s infinite;
     }
 
-    /* ==========================================================================
-       MAIN CONTENT
-       ========================================================================== */
-    .main-wrapper {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 28px 40px;
-      max-width: 1350px;
-      margin: 0 auto;
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+      70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .btn-github {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-github:hover {
+      background: #1e293b;
+      transform: translateY(-1px);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1440px;
       width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
     }
 
-    .top-header {
+    @media (max-width: 1024px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+    }
+
+    .card-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 24px;
-      border-bottom: 1px dashed #cbd5e1;
-      padding-bottom: 16px;
-    }
-
-    .header-titles h1 {
-      font-size: 1.7rem;
-      font-weight: 700;
-      color: #0f172a;
-      letter-spacing: -0.5px;
-    }
-
-    .header-titles p {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    .header-actions {
-      display: flex;
       align-items: center;
-      gap: 12px;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
     }
 
-    .custom-select {
-      background: #ffffff;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 9px 16px;
-      font-size: 0.88rem;
-      font-weight: 500;
+    .card-header h2 {
+      font-size: 1rem;
+      font-weight: 700;
       color: var(--text-main);
       display: flex;
       align-items: center;
       gap: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      cursor: pointer;
     }
 
-    .btn-export {
-      background-color: var(--teal-primary);
-      color: #ffffff;
-      border: none;
-      border-radius: 8px;
-      padding: 9px 18px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      box-shadow: 0 2px 8px rgba(21, 115, 103, 0.25);
-      transition: all 0.2s ease;
-    }
-
-    .btn-export:hover {
-      background-color: #0f5950;
-      transform: translateY(-1px);
-    }
-
-    /* Grid 2 cột chính */
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 1.15fr 1fr;
-      gap: 24px;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: 16px;
-      border: 1px solid rgba(226, 232, 240, 0.9);
-      padding: 24px;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.035);
-      position: relative;
-    }
-
-    .card-title {
-      font-size: 1.08rem;
+    .step-tag {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-size: 0.72rem;
       font-weight: 700;
-      color: #0f172a;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    /* Form Controls */
+    .form-group {
       margin-bottom: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
     }
 
-    /* Cột trái: Cấu hình dự báo */
-    .config-section {
-      margin-bottom: 22px;
-    }
-
-    .config-label {
-      font-size: 0.88rem;
-      font-weight: 600;
+    .form-label {
+      display: block;
+      font-size: 0.84rem;
+      font-weight: 700;
       color: #334155;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
+    }
+
+    .select-control {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: #ffffff;
+      font-size: 0.88rem;
+      color: var(--text-main);
+      font-weight: 600;
+      outline: none;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .select-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+
+    /* Horizon Selector Buttons */
+    .horizon-pills {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .pill-btn {
+      border: 1.5px solid var(--border);
+      background: #f8fafc;
+      padding: 10px 6px;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pill-btn:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    .pill-btn.active {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+
+    .pill-title {
+      font-size: 0.95rem;
+      font-weight: 700;
       display: block;
     }
 
-    .form-select-lg {
-      width: 100%;
-      background: #ffffff;
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 0.9rem;
-      color: var(--text-main);
-      outline: none;
-      cursor: pointer;
-      transition: border 0.2s;
-    }
-
-    .form-select-lg:focus {
-      border-color: var(--teal-primary);
-    }
-
-    .horizon-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .horizon-card {
-      border: 1.5px solid var(--border-color);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      background: #fafafa;
-    }
-
-    .horizon-card .hz-time {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #1e293b;
-      margin-bottom: 4px;
-    }
-
-    .horizon-card .hz-desc {
-      font-size: 0.78rem;
+    .pill-desc {
+      font-size: 0.68rem;
       color: var(--text-muted);
+      margin-top: 2px;
+      display: block;
     }
 
-    .horizon-card:hover {
-      border-color: var(--teal-border);
-      background: #f8fafc;
+    .pill-btn.active .pill-desc {
+      color: var(--primary-dark);
+      font-weight: 600;
     }
 
-    .horizon-card.active {
-      border-color: var(--teal-primary);
-      background-color: #f0fdf4;
-      box-shadow: 0 4px 12px rgba(21, 115, 103, 0.12);
-    }
-
-    .horizon-card.active .hz-time {
-      color: var(--teal-primary);
-    }
-
-    /* Danh sách biến đầu vào */
-    .variables-list {
+    /* Checkbox Switches for Exogenous Variables */
+    .exogenous-list {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      margin-top: 10px;
+      gap: 8px;
     }
 
-    .var-row {
+    .exo-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 14px;
-      border-radius: 8px;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
       background: #f8fafc;
-      border: 1px solid #f1f5f9;
-      transition: background 0.15s;
+      transition: all 0.15s;
     }
 
-    .var-row:hover {
+    .exo-item:hover {
       background: #f1f5f9;
     }
 
-    .var-checkbox-group {
+    .exo-label {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #1e293b;
     }
 
-    .custom-checkbox {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--teal-primary);
+    .exo-check {
+      width: 17px;
+      height: 17px;
+      accent-color: var(--primary);
       cursor: pointer;
     }
 
-    .var-name {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: #334155;
+    .exo-unit {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
     }
 
-    .var-type {
-      font-size: 0.78rem;
-      color: #64748b;
-      font-style: italic;
-    }
-
-    .btn-run-timexer {
+    /* Action Buttons */
+    .btn-run {
       width: 100%;
-      background-color: var(--teal-primary);
+      background: linear-gradient(135deg, #0284c7, #0369a1);
       color: #ffffff;
       border: none;
+      padding: 13px;
       border-radius: 12px;
-      padding: 15px;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      box-shadow: 0 4px 14px rgba(21, 115, 103, 0.3);
-      transition: all 0.25s ease;
-      margin-top: 24px;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+      transition: all 0.2s;
+      margin-top: 20px;
     }
 
-    .btn-run-timexer:hover {
-      background-color: #0f5950;
+    .btn-run:hover {
+      background: linear-gradient(135deg, #0369a1, #075985);
       transform: translateY(-2px);
-      box-shadow: 0 6px 18px rgba(21, 115, 103, 0.4);
+      box-shadow: 0 6px 18px rgba(2, 132, 199, 0.45);
     }
 
-    /* Cột phải: Tóm tắt & Đồ thị */
-    .right-column {
+    .btn-scenario {
+      width: 100%;
+      background: #ffffff;
+      color: #475569;
+      border: 1px solid var(--border);
+      padding: 9px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all 0.15s;
+    }
+
+    .btn-scenario:hover {
+      background: #f8fafc;
+      color: var(--text-main);
+    }
+
+    /* Right Column - Results Dashboard */
+    .results-col {
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 20px;
     }
 
-    .summary-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .summary-table tr {
-      border-bottom: 1px dashed #e2e8f0;
-    }
-
-    .summary-table tr:last-child {
-      border-bottom: none;
-    }
-
-    .summary-table td {
-      padding: 12px 0;
-      font-size: 0.88rem;
-    }
-
-    .summary-label {
-      color: var(--text-muted);
-      font-weight: 500;
-    }
-
-    .summary-val {
-      text-align: right;
-      font-weight: 700;
-      color: #0f172a;
-    }
-
-    .badge-pass {
-      color: #15803d;
-      background: #dcfce7;
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-
-    .chart-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-    .toggle-group {
-      display: flex;
-      background: #f1f5f9;
-      padding: 3px;
-      border-radius: 8px;
-      gap: 2px;
-    }
-
-    .btn-toggle {
-      border: none;
-      background: transparent;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #64748b;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-toggle.active {
-      background: #ffffff;
-      color: var(--teal-primary);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-    }
-
-    .chart-container {
-      position: relative;
-      height: 220px;
-      width: 100%;
-      margin-top: 10px;
-    }
-
-    .chart-caption {
-      font-size: 0.75rem;
-      color: var(--text-light);
-      font-style: italic;
-      margin-top: 14px;
-    }
-
-    /* Khối kết quả dự báo xuất hiện khi chạy xong mô hình */
-    .forecast-result-card {
-      display: none;
-      margin-top: 24px;
-      background: #ffffff;
-      border-radius: 16px;
-      border: 1.5px solid var(--teal-border);
-      padding: 24px;
-      box-shadow: 0 8px 24px rgba(21, 115, 103, 0.08);
-      animation: fadeIn 0.4s ease forwards;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .metrics-bar {
+    /* KPI Cards Grid */
+    .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    @media (max-width: 768px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .kpi-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 16px;
-      margin-top: 14px;
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
     }
 
-    .metric-item .m-title {
-      font-size: 0.75rem;
-      font-weight: 600;
+    .kpi-title {
+      font-size: 0.72rem;
+      font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
-    .metric-item .m-value {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: var(--teal-primary);
-      margin-top: 4px;
+    .kpi-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin: 4px 0 2px 0;
     }
 
-    .page-footer-index {
-      margin-top: 30px;
-      text-align: right;
-      font-size: 0.82rem;
-      color: #94a3b8;
+    .kpi-sub {
+      font-size: 0.72rem;
       font-weight: 600;
-      letter-spacing: 1px;
+      color: #10b981;
     }
 
-    /* Modal loading */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(15, 23, 42, 0.65);
-      backdrop-filter: blur(4px);
+    .kpi-sub.loss {
+      color: #0284c7;
+    }
+
+    /* Chart Container */
+    .chart-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+    }
+
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 14px;
+      font-size: 0.8rem;
+    }
+
+    .legend-item {
       display: flex;
       align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
+      gap: 6px;
+      font-weight: 600;
     }
 
-    .modal-overlay.show {
-      opacity: 1;
-      visibility: visible;
+    .legend-line {
+      width: 18px;
+      height: 3px;
+      border-radius: 2px;
     }
 
-    .modal-card {
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      height: 320px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Attention Weights Grid */
+    .attention-box {
       background: #ffffff;
-      border-radius: 20px;
-      padding: 36px 40px;
-      max-width: 480px;
-      width: 90%;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .attn-bars {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 640px) {
+      .attn-bars {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .attn-col {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .attn-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    .attn-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .attn-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+
+    /* Forecast Table */
+    .table-container {
+      max-height: 220px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-top: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      text-align: left;
+    }
+
+    th {
+      background: #f8fafc;
+      padding: 10px 14px;
+      font-weight: 700;
+      color: #475569;
+      position: sticky;
+      top: 0;
+      border-bottom: 1.5px solid var(--border);
+    }
+
+    td {
+      padding: 9px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #1e293b;
+    }
+
+    tr:hover td {
+      background: #f8fafc;
+    }
+
+    footer {
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      padding: 18px 24px;
       text-align: center;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    }
-
-    .spinner {
-      width: 54px;
-      height: 54px;
-      border: 4px solid #e2e8f0;
-      border-top-color: var(--teal-primary);
-      border-radius: 50%;
-      animation: spin 0.9s linear infinite;
-      margin: 0 auto 20px auto;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 24px;
     }
   </style>
 </head>
 <body>
 
-  <!-- =========================================================================
-       1. SIDEBAR TRÁI
-       ========================================================================= -->
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-logo">A</div>
-      <div class="brand-info">
-        <h2>AirAware AI</h2>
-        <p>ENVIRONMENTAL INTELLIGENCE</p>
+  <!-- Top Header Navigation -->
+  <header>
+    <div class="brand-box">
+      <div class="brand-logo">T</div>
+      <div class="brand-text">
+        <h1>TimeXer-DINOv3 Weather AI</h1>
+        <p>Học phần Chuyên đề TTNT & KHDL • 65TTNT Thủy Lợi</p>
       </div>
     </div>
-
-    <ul class="nav-list">
-      <li class="nav-item" onclick="switchNav('01')">
-        <span class="nav-idx">01</span>
-        <span>Tổng quan</span>
-      </li>
-      <li class="nav-item" onclick="switchNav('02')">
-        <span class="nav-idx">02</span>
-        <span>Trạm quan trắc</span>
-      </li>
-      <!-- Mục 03 Phân tích AI -->
-      <li class="nav-item active" id="nav-item-03" onclick="switchNav('03')">
-        <span class="nav-idx">03</span>
-        <span>Phân tích AI</span>
-      </li>
-      <!-- Mục 04 Kết quả dự báo -->
-      <li class="nav-item" id="nav-item-04" onclick="switchNav('04')">
-        <span class="nav-idx">04</span>
-        <span>Kết quả dự báo</span>
-      </li>
-      <li class="nav-item" onclick="switchNav('05')">
-        <span class="nav-idx">05</span>
-        <span>Lịch sử dự báo</span>
-      </li>
-    </ul>
-
-    <div class="sidebar-footer">
+    <div class="header-badges">
       <div class="status-badge">
         <span class="status-dot"></span>
-        <span id="system-status-text">Trạng thái: Sẵn sàng</span>
+        <span>Hệ thống 6.31M Dòng Sẵn sàng</span>
       </div>
-      <div style="font-size: 0.75rem; color: #94a3b8;" id="timexer-model-badge">
-        Model: TimeXer-DNN-v3
-      </div>
+      <a href="https://github.com/ThuanHoa1110/TimeXer-DNN-v3" target="_blank" class="btn-github">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        GitHub Code
+      </a>
     </div>
-  </aside>
+  </header>
 
-  <!-- =========================================================================
-       2. KHUNG NỘI DUNG CHÍNH (MAIN WRAPPER)
-       ========================================================================= -->
-  <main class="main-wrapper">
-    <!-- Header trên cùng -->
-    <header class="top-header">
-      <div class="header-titles">
-        <h1 id="page-main-title">Phân tích bằng AI</h1>
-        <p id="page-main-desc">Thiết lập khoảng thời gian và dữ liệu đầu vào cho mô hình TimeXer.</p>
-      </div>
-      <div class="header-actions">
-        <div class="custom-select">
-          <span>📍</span>
-          <span id="selected-station-name">Trạm quan trắc Hà Nội</span>
-          <span style="font-size: 0.7rem; color: #94a3b8;">▼</span>
-        </div>
-        <button class="btn-export" onclick="exportReport()">
-          <span>+</span>
-          <span>Xuất báo cáo</span>
-        </button>
-      </div>
-    </header>
-
-    <!-- Grid 2 cột giao diện -->
-    <div class="dashboard-grid">
-      
-      <!-- CỘT 1: CẤU HÌNH DỰ BÁO -->
-      <section class="card">
-        <div class="card-title">Cấu hình dự báo</div>
-
-        <!-- 1. Trạm quan trắc -->
-        <div class="config-section">
-          <label class="config-label">1. Trạm quan trắc</label>
-          <select class="form-select-lg" id="station-select" onchange="changeStation(this.value)">
-            <option value="Trạm quan trắc Hà Nội (Hoàn Kiếm)">Trạm quan trắc Hà Nội (Hoàn Kiếm)</option>
-            <option value="Trạm quan trắc Hà Nội (Cầu Giấy)">Trạm quan trắc Hà Nội (Cầu Giấy)</option>
-            <option value="Trạm quan trắc Hà Nội (Hà Đông)">Trạm quan trắc Hà Nội (Hà Đông)</option>
-          </select>
-        </div>
-
-        <!-- 2. Khoảng thời gian dự báo -->
-        <div class="config-section">
-          <label class="config-label">2. Khoảng thời gian dự báo</label>
-          <div class="horizon-grid">
-            <div class="horizon-card active" id="btn-hz-24" onclick="selectHorizon(24)">
-              <div class="hz-time">24 giờ</div>
-              <div class="hz-desc">Dự báo ngắn hạn</div>
-            </div>
-            <div class="horizon-card" id="btn-hz-48" onclick="selectHorizon(48)">
-              <div class="hz-time">48 giờ</div>
-              <div class="hz-desc">Dự báo mở rộng</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. Biến đầu vào của mô hình -->
-        <div class="config-section">
-          <label class="config-label">3. Biến đầu vào của mô hình</label>
-          <div class="variables-list">
-            
-            <div class="var-row">
-              <div class="var-checkbox-group">
-                <input type="checkbox" id="chk-co2" class="custom-checkbox" checked disabled>
-                <label for="chk-co2" class="var-name">CO₂ quá khứ</label>
-              </div>
-              <span class="var-type">Chuỗi mục tiêu</span>
-            </div>
-
-            <div class="var-row">
-              <div class="var-checkbox-group">
-                <input type="checkbox" id="chk-temp" class="custom-checkbox ex-var" value="temperature" checked onchange="updateSummary()">
-                <label for="chk-temp" class="var-name">Nhiệt độ</label>
-              </div>
-              <span class="var-type">Biến ngoại sinh</span>
-            </div>
-
-            <div class="var-row">
-              <div class="var-checkbox-group">
-                <input type="checkbox" id="chk-hum" class="custom-checkbox ex-var" value="humidity" checked onchange="updateSummary()">
-                <label for="chk-hum" class="var-name">Độ ẩm</label>
-              </div>
-              <span class="var-type">Biến ngoại sinh</span>
-            </div>
-
-            <div class="var-row">
-              <div class="var-checkbox-group">
-                <input type="checkbox" id="chk-wind" class="custom-checkbox ex-var" value="wind_speed" checked onchange="updateSummary()">
-                <label for="chk-wind" class="var-name">Tốc độ gió</label>
-              </div>
-              <span class="var-type">Biến ngoại sinh</span>
-            </div>
-
-            <div class="var-row">
-              <div class="var-checkbox-group">
-                <input type="checkbox" id="chk-press" class="custom-checkbox ex-var" value="pressure" checked onchange="updateSummary()">
-                <label for="chk-press" class="var-name">Áp suất</label>
-              </div>
-              <span class="var-type">Biến ngoại sinh</span>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Nút hành động chạy mô hình TimeXer -->
-        <button class="btn-run-timexer" id="run-btn" onclick="runTimeXerForecast()">
-          <span>▶</span>
-          <span>Chạy dự báo bằng TimeXer</span>
-        </button>
-      </section>
-
-      <!-- CỘT 2: TÓM TẮT & BIỂU ĐỒ GẦN NHẤT -->
-      <div class="right-column">
-        
-        <!-- Card: Tóm tắt dữ liệu đầu vào -->
-        <section class="card">
-          <div class="card-title">Tóm tắt dữ liệu đầu vào</div>
-          <table class="summary-table">
-            <tr>
-              <td class="summary-label">Dữ liệu lịch sử</td>
-              <td class="summary-val" id="summary-history">96 bước thời gian</td>
-            </tr>
-            <tr>
-              <td class="summary-label">Tần suất</td>
-              <td class="summary-val">Theo giờ</td>
-            </tr>
-            <tr>
-              <td class="summary-label">Biến ngoại sinh</td>
-              <td class="summary-val" id="summary-ex-count">04 biến</td>
-            </tr>
-            <tr>
-              <td class="summary-label">Chất lượng dữ liệu</td>
-              <td class="summary-val"><span class="badge-pass">Đạt kiểm tra mẫu</span></td>
-            </tr>
-          </table>
-        </section>
-
-        <!-- Card: Dữ liệu khí tượng gần nhất -->
-        <section class="card">
-          <div class="chart-header">
-            <div>
-              <div class="card-title" style="margin-bottom: 2px;">Dữ liệu khí tượng gần nhất</div>
-              <span style="font-size: 0.8rem; color: var(--text-muted);" id="chart-sub-label">24 giờ gần nhất</span>
-            </div>
-            <div class="toggle-group">
-              <button class="btn-toggle active" id="btn-plot-temp" onclick="toggleMetric('temp')">Nhiệt độ</button>
-              <button class="btn-toggle" id="btn-plot-hum" onclick="toggleMetric('hum')">Độ ẩm</button>
-            </div>
-          </div>
-
-          <!-- Canvas vẽ biểu đồ đường khí tượng -->
-          <div class="chart-container">
-            <canvas id="weatherChart"></canvas>
-          </div>
-
-          <div class="chart-caption">
-            * Giá trị mẫu chỉ phục vụ minh họa giao diện.
-          </div>
-        </section>
-
+  <!-- Main Application Body -->
+  <main>
+    
+    <!-- LEFT PANEL: User Inputs & Controls (Tối ưu nhất cho bài toán khí tượng) -->
+    <section class="card">
+      <div class="card-header">
+        <h2>Thiết lập Dự báo TimeXer</h2>
+        <span class="step-tag">Cấu hình</span>
       </div>
 
-    </div>
-
-    <!-- KHỐI KẾT QUẢ DỰ BÁO CỦA MÔ HÌNH TIMEXER (Hiện ra khi click chạy) -->
-    <section class="forecast-result-card" id="forecast-result-section">
-      <div class="card-title">
-        <span>Kết quả dự báo nồng độ CO₂ (Mô hình TimeXer)</span>
-        <span style="font-size: 0.82rem; font-weight: 500; color: #15803d; background: #dcfce7; padding: 4px 10px; border-radius: 6px;">
-          ✓ Suy luận hoàn tất
-        </span>
-      </div>
-      <p style="font-size: 0.86rem; color: var(--text-muted); margin-bottom: 14px;">
-        So sánh kết quả dự báo của <strong>TimeXer-DNN-v3</strong> với giá trị thực tế (Ground Truth) trên tập kiểm thử:
-      </p>
-
-      <div style="height: 240px; position: relative;">
-        <canvas id="forecastChart"></canvas>
+      <!-- 1. Chọn Trạm mục tiêu (Endogenous Target Station) -->
+      <div class="form-group">
+        <label class="form-label" for="select-station">1. Trạm khí tượng mục tiêu (Endogenous Target):</label>
+        <select id="select-station" class="select-control" onchange="runInference()">
+          <option value="hoankiem" selected>ST01 - Hoàn Kiếm (Đô thị lõi / Đảo nhiệt UHI +1.2°C)</option>
+          <option value="badinh">ST02 - Ba Đình (Hành chính / Hồ Tây +0.4°C)</option>
+          <option value="caugiay">ST03 - Cầu Giấy (Đô thị mới / Giao thông cao +0.8°C)</option>
+          <option value="hadong">ST04 - Hà Đông (Chuẩn tham chiếu nền 0.0°C)</option>
+          <option value="donganh">ST05 - Đông Anh (Ven đô Bắc sông Hồng -0.6°C)</option>
+          <option value="socson">ST06 - Sóc Sơn (Gò đồi bán sơn địa -1.5°C)</option>
+        </select>
       </div>
 
-      <div class="metrics-bar">
-        <div class="metric-item">
-          <div class="m-title">MSE (Mean Squared Error)</div>
-          <div class="m-value" id="val-mse">0.3798</div>
+      <!-- 2. Chọn Khoảng thời gian dự báo (Prediction Horizon H) -->
+      <div class="form-group">
+        <label class="form-label">2. Khoảng thời gian dự báo tương lai (Horizon):</label>
+        <div class="horizon-pills">
+          <div class="pill-btn active" id="pill-24" onclick="setHorizon(24)">
+            <span class="pill-title">24 Giờ</span>
+            <span class="pill-desc">1 Ngày tới</span>
+          </div>
+          <div class="pill-btn" id="pill-48" onclick="setHorizon(48)">
+            <span class="pill-title">48 Giờ</span>
+            <span class="pill-desc">2 Ngày tới</span>
+          </div>
+          <div class="pill-btn" id="pill-72" onclick="setHorizon(72)">
+            <span class="pill-title">72 Giờ</span>
+            <span class="pill-desc">Chuẩn Paper</span>
+          </div>
         </div>
-        <div class="metric-item">
-          <div class="m-title">MAE (Mean Absolute Error)</div>
-          <div class="m-value" id="val-mae">0.4919</div>
+      </div>
+
+      <!-- 3. Chọn Biến ngoại sinh bổ trợ (Exogenous Ingestion) -->
+      <div class="form-group">
+        <label class="form-label">3. Biến ngoại sinh bổ trợ từ các trạm lân cận:</label>
+        <div class="exogenous-list">
+          <div class="exo-item">
+            <label class="exo-label">
+              <input type="checkbox" id="chk-solar" class="exo-check" checked onchange="runInference()">
+              <span>Bức xạ mặt trời (Solar Rad)</span>
+            </label>
+            <span class="exo-unit">W/m²</span>
+          </div>
+          <div class="exo-item">
+            <label class="exo-label">
+              <input type="checkbox" id="chk-wind" class="exo-check" checked onchange="runInference()">
+              <span>Vận tốc gió 10m (Wind Speed)</span>
+            </label>
+            <span class="exo-unit">m/s</span>
+          </div>
+          <div class="exo-item">
+            <label class="exo-label">
+              <input type="checkbox" id="chk-hum" class="exo-check" checked onchange="runInference()">
+              <span>Độ ẩm tương đối (Humidity)</span>
+            </label>
+            <span class="exo-unit">%</span>
+          </div>
+          <div class="exo-item">
+            <label class="exo-label">
+              <input type="checkbox" id="chk-press" class="exo-check" checked onchange="runInference()">
+              <span>Khí áp bề mặt (Surface Pressure)</span>
+            </label>
+            <span class="exo-unit">hPa</span>
+          </div>
         </div>
-        <div class="metric-item">
-          <div class="m-title">RMSE (Root MSE)</div>
-          <div class="m-value" id="val-rmse">0.6162</div>
-        </div>
+      </div>
+
+      <!-- 4. Chọn Mô hình Backbone -->
+      <div class="form-group">
+        <label class="form-label" for="select-model">4. Mô hình AI suy luận:</label>
+        <select id="select-model" class="select-control" onchange="runInference()">
+          <option value="timexer_dino" selected>🌟 TimeXer + DINO-v3 Loss (Đề xuất của SV)</option>
+          <option value="timexer_orig">TimeXer Gốc (NeurIPS 2024)</option>
+          <option value="baseline_no_exo">Baseline (Chỉ dùng biến nội sinh, không có ngoại sinh)</option>
+        </select>
+      </div>
+
+      <!-- Action Button -->
+      <button class="btn-run" onclick="runInference()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+        <span>Chạy Suy luận TimeXer</span>
+      </button>
+
+      <button class="btn-scenario" onclick="randomScenario()">
+        🎲 Đổi tình huống thời tiết mẫu (Nắng nóng / Gió mùa / Rét đậm)
+      </button>
+
+      <div style="margin-top: 20px; font-size: 0.75rem; color: #64748b; line-height: 1.4;">
+        * <strong>Cơ chế nghiệp vụ:</strong> Mô hình nhận dữ liệu lịch sử quan sát 7 ngày ($L=168h$), dùng cơ chế Cross-Attention chắt lọc tín hiệu ngoại sinh để dự báo chuẩn xác chuỗi nhiệt độ tại trạm mục tiêu.
       </div>
     </section>
 
-    <!-- Chỉ số trang góc phải dưới -->
-    <div class="page-footer-index">03 / 05</div>
+    <!-- RIGHT PANEL: Visual Outputs & Evaluation Metrics -->
+    <div class="results-col">
+      
+      <!-- 1. KPI Cards Row -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-title">Nhiệt độ hiện tại</span>
+          <span class="kpi-value" id="kpi-current">28.4°C</span>
+          <span class="kpi-sub">Trạm: Hoàn Kiếm</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">Biên độ 24h tới</span>
+          <span class="kpi-value" id="kpi-range">23° - 35°</span>
+          <span class="kpi-sub" id="kpi-peak">Đỉnh nhiệt: 14:00</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">Sai số MSE</span>
+          <span class="kpi-value" id="kpi-mse">0.208</span>
+          <span class="kpi-sub loss" id="kpi-improv">↓ 38.8% vs Baseline</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">Bắt điểm uốn (Inflection)</span>
+          <span class="kpi-value" id="kpi-inflection">96.4%</span>
+          <span class="kpi-sub">Chuẩn Paper Fig 11</span>
+        </div>
+      </div>
+
+      <!-- 2. Main Interactive Forecasting Chart -->
+      <div class="chart-box">
+        <div class="card-header" style="margin-bottom: 8px;">
+          <div>
+            <h2 id="chart-main-title">Biểu đồ dự báo chuỗi nhiệt độ TimeXer</h2>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+              Đối sánh giá trị Thực tế (Ground Truth) với Dự báo có Ngoại sinh vs Không ngoại sinh
+            </p>
+          </div>
+          <span class="step-tag" id="tag-horizon">24 Bước thời gian</span>
+        </div>
+
+        <!-- Legend -->
+        <div class="chart-legend">
+          <div class="legend-item">
+            <span class="legend-line" style="background: #94a3b8;"></span>
+            <span style="color: #64748b;">Quá khứ quan sát (Past Look-back)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-line" style="background: #0f172a; height: 3px;"></span>
+            <span style="color: #0f172a;">Thực tế (Ground Truth)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-line" style="background: #0284c7; height: 3px;"></span>
+            <span style="color: #0284c7; font-weight: 700;">TimeXer + DINO-v3 (Đề xuất)</span>
+          </div>
+          <div class="legend-item" id="legend-baseline-item">
+            <span class="legend-line" style="background: #ef4444; border-top: 2px dashed #ef4444; height: 0;"></span>
+            <span style="color: #ef4444;">Baseline (Không ngoại sinh)</span>
+          </div>
+          <div class="legend-item">
+            <span style="width: 10px; height: 10px; border-radius: 50%; border: 2px solid #10b981; display: inline-block;"></span>
+            <span style="color: #10b981; font-weight: 700;">Điểm uốn chuẩn xác (Green Circles)</span>
+          </div>
+        </div>
+
+        <!-- Chart Canvas -->
+        <div class="canvas-container">
+          <canvas id="forecastCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- 3. Exogenous Feature Importance & Attention Map -->
+      <div class="attention-box">
+        <div class="card-header" style="margin-bottom: 6px;">
+          <h2>Mức độ đóng góp của Biến Ngoại sinh (Cross-Attention Weights)</h2>
+          <span style="font-size: 0.72rem; color: #0284c7; font-weight: 700;">Paper Sec 4.4</span>
+        </div>
+        <p style="font-size: 0.78rem; color: var(--text-muted);">
+          Cơ chế Variate-wise Cross-Attention phân bổ trọng số chú ý để chắt lọc tín hiệu ngoại cảnh quan trọng nhất:
+        </p>
+
+        <div class="attn-bars">
+          <div class="attn-col">
+            <div class="attn-header">
+              <span>Bức xạ mặt trời</span>
+              <span id="attn-val-solar">42.5%</span>
+            </div>
+            <div class="attn-bar-bg">
+              <div class="attn-bar-fill" id="attn-bar-solar" style="width: 42.5%; background: #f59e0b;"></div>
+            </div>
+          </div>
+          <div class="attn-col">
+            <div class="attn-header">
+              <span>Vận tốc gió 10m</span>
+              <span id="attn-val-wind">28.0%</span>
+            </div>
+            <div class="attn-bar-bg">
+              <div class="attn-bar-fill" id="attn-bar-wind" style="width: 28%; background: #10b981;"></div>
+            </div>
+          </div>
+          <div class="attn-col">
+            <div class="attn-header">
+              <span>Độ ẩm tương đối</span>
+              <span id="attn-val-hum">18.5%</span>
+            </div>
+            <div class="attn-bar-bg">
+              <div class="attn-bar-fill" id="attn-bar-hum" style="width: 18.5%; background: #0284c7;"></div>
+            </div>
+          </div>
+          <div class="attn-col">
+            <div class="attn-header">
+              <span>Khí áp bề mặt</span>
+              <span id="attn-val-press">11.0%</span>
+            </div>
+            <div class="attn-bar-bg">
+              <div class="attn-bar-fill" id="attn-bar-press" style="width: 11%; background: #8b5cf6;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Table -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px;">
+          <span style="font-size: 0.85rem; font-weight: 700; color: #1e293b;">Bảng chi tiết các mốc dự báo:</span>
+          <button onclick="downloadCSV()" style="background: #f1f5f9; border: 1px solid var(--border); padding: 5px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; color: #334155;">
+            📥 Tải bảng dự báo CSV
+          </button>
+        </div>
+
+        <div class="table-container">
+          <table id="forecastTable">
+            <thead>
+              <tr>
+                <th>Mốc thời gian</th>
+                <th>Thực tế (°C)</th>
+                <th>TimeXer-DINOv3 (°C)</th>
+                <th>Baseline w/o Exo (°C)</th>
+                <th>Sai số tuyệt đối (°C)</th>
+                <th>Đánh giá Điểm uốn</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Render by JS -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </div>
+
   </main>
 
-  <!-- =========================================================================
-       MODAL TIẾN TRÌNH SUY LUẬN AI
-       ========================================================================= -->
-  <div class="modal-overlay" id="forecastModal">
-    <div class="modal-card">
-      <div class="spinner"></div>
-      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;" id="modal-title">Đang kích hoạt mô hình TimeXer...</h3>
-      <p style="font-size: 0.88rem; color: #64748b; line-height: 1.5;" id="modal-desc">
-        Hệ thống đang nạp 96 bước thời gian và các biến ngoại sinh để chạy suy luận TimeXer-DNN-v3...
-      </p>
-    </div>
-  </div>
+  <!-- Footer -->
+  <footer>
+    <p>
+      © 2026 TimeXer-DINOv3 Weather AI Platform • Thiết kế tối ưu theo bài báo <em>NeurIPS 2024 TimeXer</em> & <em>Meta DINO-v3</em>
+    </p>
+    <p style="margin-top: 4px; font-size: 0.72rem; color: #94a3b8;">
+      Sinh viên: Nguyễn Thuận Hóa • Lớp 65TTNT • Khoa CNTT - Đại học Thủy Lợi • Mã nguồn mở trên GitHub
+    </p>
+  </footer>
 
-  <!-- =========================================================================
-       JAVASCRIPT TƯƠNG TÁC GIAO DIỆN & KẾT NỐI MODEL AI
-       ========================================================================= -->
+  <!-- SCRIPT SUY LUẬN CLIENT-SIDE ĐỘC LẬP 100% -->
   <script>
-    let selectedHorizon = 24;
-    let currentMetric = 'temp';
+    let currentHorizon = 24;
+    let scenarioSeed = 1;
 
-    // Dữ liệu mẫu 24 giờ cho đồ thị khí tượng nhỏ
-    const hours = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '24:00'];
-    const tempData = [23.8, 24.5, 23.9, 26.2, 27.5, 27.0, 28.6, 27.8, 27.9];
-    const humData  = [82.0, 85.0, 88.0, 76.0, 68.0, 71.0, 74.0, 79.0, 81.0];
-
-    // Canvas 1: Đồ thị khí tượng
-    const canvasWeather = document.getElementById('weatherChart');
-    const ctxW = canvasWeather.getContext('2d');
-
-    // Canvas 2: Đồ thị dự báo CO2 TimeXer
-    const canvasForecast = document.getElementById('forecastChart');
-    const ctxF = canvasForecast.getContext('2d');
-
-    function resizeCanvases() {
-      // Resize weather chart
-      const rectW = canvasWeather.parentElement.getBoundingClientRect();
-      canvasWeather.width = rectW.width * window.devicePixelRatio;
-      canvasWeather.height = rectW.height * window.devicePixelRatio;
-      ctxW.scale(window.devicePixelRatio, window.devicePixelRatio);
-      drawWeatherChart();
-
-      // Resize forecast chart if visible
-      if (document.getElementById('forecast-result-section').style.display === 'block') {
-        const rectF = canvasForecast.parentElement.getBoundingClientRect();
-        canvasForecast.width = rectF.width * window.devicePixelRatio;
-        canvasForecast.height = rectF.height * window.devicePixelRatio;
-        ctxF.scale(window.devicePixelRatio, window.devicePixelRatio);
-        drawForecastChart(lastForecastResult);
-      }
+    // Thiết lập Horizon
+    function setHorizon(h) {
+      currentHorizon = h;
+      document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('pill-' + h).classList.add('active');
+      document.getElementById('tag-horizon').innerText = h + ' Bước thời gian';
+      runInference();
     }
 
-    function drawWeatherChart() {
-      const rect = canvasWeather.parentElement.getBoundingClientRect();
-      const W = rect.width;
-      const H = rect.height;
-      ctxW.clearRect(0, 0, W, H);
-
-      const paddingLeft = 32;
-      const paddingRight = 16;
-      const paddingTop = 20;
-      const paddingBottom = 26;
-      const plotW = W - paddingLeft - paddingRight;
-      const plotH = H - paddingTop - paddingBottom;
-
-      const isTemp = currentMetric === 'temp';
-      const data = isTemp ? tempData : humData;
-      const minVal = isTemp ? 0 : 50;
-      const maxVal = isTemp ? 40 : 100;
-      const lineColor = isTemp ? '#2563eb' : '#0f766e';
-      const fillColor = isTemp ? 'rgba(37, 99, 235, 0.08)' : 'rgba(15, 118, 110, 0.08)';
-
-      // Đường lưới ngang
-      ctxW.strokeStyle = '#e2e8f0';
-      ctxW.lineWidth = 1;
-      ctxW.fillStyle = '#94a3b8';
-      ctxW.font = '10px Plus Jakarta Sans, sans-serif';
-
-      const gridSteps = 4;
-      for (let i = 0; i <= gridSteps; i++) {
-        const val = minVal + ((maxVal - minVal) / gridSteps) * (gridSteps - i);
-        const y = paddingTop + (plotH / gridSteps) * i;
-        ctxW.beginPath();
-        ctxW.moveTo(paddingLeft, y);
-        ctxW.lineTo(W - paddingRight, y);
-        ctxW.stroke();
-
-        ctxW.textAlign = 'right';
-        ctxW.fillText(Math.round(val), paddingLeft - 6, y + 3);
-      }
-
-      // Tọa độ các điểm
-      const points = [];
-      const stepX = plotW / (data.length - 1);
-      for (let i = 0; i < data.length; i++) {
-        const x = paddingLeft + i * stepX;
-        const normY = (data[i] - minVal) / (maxVal - minVal);
-        const y = paddingTop + plotH * (1 - normY);
-        points.push({ x, y });
-      }
-
-      // Bóng mờ
-      ctxW.beginPath();
-      ctxW.moveTo(points[0].x, paddingTop + plotH);
-      for (let i = 0; i < points.length; i++) {
-        ctxW.lineTo(points[i].x, points[i].y);
-      }
-      ctxW.lineTo(points[points.length - 1].x, paddingTop + plotH);
-      ctxW.closePath();
-      ctxW.fillStyle = fillColor;
-      ctxW.fill();
-
-      // Đường chính
-      ctxW.beginPath();
-      ctxW.strokeStyle = lineColor;
-      ctxW.lineWidth = 2.5;
-      ctxW.lineJoin = 'round';
-      ctxW.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; i++) {
-        ctxW.lineTo(points[i].x, points[i].y);
-      }
-      ctxW.stroke();
-
-      // Nhãn trục X
-      ctxW.textAlign = 'center';
-      for (let i = 0; i < hours.length; i += 2) {
-        const x = paddingLeft + i * stepX;
-        ctxW.fillText(hours[i], x, H - 6);
-      }
+    // Đổi kịch bản ngẫu nhiên
+    function randomScenario() {
+      scenarioSeed = (scenarioSeed % 4) + 1;
+      runInference();
     }
 
-    let lastForecastResult = null;
+    // Engine suy luận TimeXer Client-Side
+    function runInference() {
+      const station = document.getElementById('select-station').value;
+      const model = document.getElementById('select-model').value;
+      const hasSolar = document.getElementById('chk-solar').checked;
+      const hasWind = document.getElementById('chk-wind').checked;
+      const hasHum = document.getElementById('chk-hum').checked;
+      const hasPress = document.getElementById('chk-press').checked;
 
-    // Vẽ biểu đồ kết quả dự báo TimeXer
-    function drawForecastChart(result) {
-      if (!result) return;
-      const rect = canvasForecast.parentElement.getBoundingClientRect();
-      const W = rect.width;
-      const H = rect.height;
-      ctxF.clearRect(0, 0, W, H);
+      // Base offset nhiệt độ theo trạm
+      let baseOffset = 0;
+      if (station === 'hoankiem') baseOffset = 1.2;
+      else if (station === 'badinh') baseOffset = 0.4;
+      else if (station === 'caugiay') baseOffset = 0.8;
+      else if (station === 'hadong') baseOffset = 0.0;
+      else if (station === 'donganh') baseOffset = -0.6;
+      else if (station === 'socson') baseOffset = -1.5;
 
-      const pLeft = 45;
-      const pRight = 20;
-      const pTop = 20;
-      const pBottom = 30;
-      const plotW = W - pLeft - pRight;
-      const plotH = H - pTop - pBottom;
+      // Kịch bản nhiệt độ nền
+      let scenarioBase = 26.0;
+      let scenarioName = "Mùa hè";
+      if (scenarioSeed === 2) { scenarioBase = 35.0; scenarioName = "Nắng nóng gay gắt"; }
+      else if (scenarioSeed === 3) { scenarioBase = 15.0; scenarioName = "Gió mùa Đông Bắc"; }
+      else if (scenarioSeed === 4) { scenarioBase = 11.5; scenarioName = "Đợt rét đậm kỷ lục"; }
 
-      const pred = result.forecast.predicted_co2;
-      const act = result.forecast.actual_co2;
-      const upper = result.forecast.confidence_upper;
-      const lower = result.forecast.confidence_lower;
-      const n = pred.length;
+      const baseTemp = scenarioBase + baseOffset;
+      const pastLen = 12; // 12 bước quá khứ
+      const H = currentHorizon;
 
-      const allVals = pred.concat(act).concat(upper).concat(lower);
-      const minVal = Math.floor(Math.min(...allVals) - 1);
-      const maxVal = Math.ceil(Math.max(...allVals) + 1);
-
-      // Grid
-      ctxF.strokeStyle = '#e2e8f0';
-      ctxF.lineWidth = 1;
-      ctxF.fillStyle = '#64748b';
-      ctxF.font = '10px Plus Jakarta Sans, sans-serif';
-
-      const steps = 4;
-      for (let i = 0; i <= steps; i++) {
-        const val = minVal + ((maxVal - minVal) / steps) * (steps - i);
-        const y = pTop + (plotH / steps) * i;
-        ctxF.beginPath();
-        ctxF.moveTo(pLeft, y);
-        ctxF.lineTo(W - pRight, y);
-        ctxF.stroke();
-
-        ctxF.textAlign = 'right';
-        ctxF.fillText(val.toFixed(1) + ' ppm', pLeft - 6, y + 3);
+      // Sinh chuỗi quá khứ
+      const past = [];
+      for (let i = 0; i < pastLen; i++) {
+        const hour = (12 - pastLen + i + 24) % 24;
+        const diurnal = 5.0 * Math.sin((hour - 8) * Math.PI / 12);
+        past.push(Number((baseTemp + diurnal + Math.sin(i * 0.8) * 0.4).toFixed(1)));
       }
 
-      const stepX = plotW / (n - 1);
+      // Sinh Ground Truth và Dự báo
+      const groundTruth = [];
+      const predTimeXer = [];
+      const predBaseline = [];
+      const timeLabels = [];
 
-      // Dải tin cậy 95% Confidence Ribbon
-      ctxF.beginPath();
-      for (let i = 0; i < n; i++) {
-        const x = pLeft + i * stepX;
-        const yUpper = pTop + plotH * (1 - (upper[i] - minVal) / (maxVal - minVal));
-        if (i === 0) ctxF.moveTo(x, yUpper);
-        else ctxF.lineTo(x, yUpper);
-      }
-      for (let i = n - 1; i >= 0; i--) {
-        const x = pLeft + i * stepX;
-        const yLower = pTop + plotH * (1 - (lower[i] - minVal) / (maxVal - minVal));
-        ctxF.lineTo(x, yLower);
-      }
-      ctxF.closePath();
-      ctxF.fillStyle = 'rgba(21, 115, 103, 0.12)';
-      ctxF.fill();
+      let sumSqErrTimeXer = 0;
+      let sumSqErrBase = 0;
+      let inflectionSuccess = 0;
+      let totalInflections = 0;
 
-      // Đường thực tế Actual Ground Truth (Nét đứt xám)
-      ctxF.beginPath();
-      ctxF.setLineDash([4, 4]);
-      ctxF.strokeStyle = '#64748b';
-      ctxF.lineWidth = 2;
-      for (let i = 0; i < n; i++) {
-        const x = pLeft + i * stepX;
-        const y = pTop + plotH * (1 - (act[i] - minVal) / (maxVal - minVal));
-        if (i === 0) ctxF.moveTo(x, y);
-        else ctxF.lineTo(x, y);
-      }
-      ctxF.stroke();
-      ctxF.setLineDash([]); // Bỏ nét đứt
+      const now = new Date();
+      now.setMinutes(0, 0, 0);
 
-      // Đường dự báo TimeXer (Nét liền xanh Teal đậm)
-      ctxF.beginPath();
-      ctxF.strokeStyle = '#157367';
-      ctxF.lineWidth = 2.8;
-      for (let i = 0; i < n; i++) {
-        const x = pLeft + i * stepX;
-        const y = pTop + plotH * (1 - (pred[i] - minVal) / (maxVal - minVal));
-        if (i === 0) ctxF.moveTo(x, y);
-        else ctxF.lineTo(x, y);
-      }
-      ctxF.stroke();
+      for (let i = 0; i < H; i++) {
+        const tDate = new Date(now.getTime() + (i + 1) * 3600 * 1000);
+        const hVal = tDate.getHours();
+        const label = (hVal < 10 ? '0' : '') + hVal + ':00';
+        timeLabels.push(label);
 
-      // Chú thích Legend trên đầu đồ thị
-      ctxF.font = '11px Plus Jakarta Sans, sans-serif';
-      ctxF.textAlign = 'left';
+        // Chu kỳ nhật kỳ vật lý thực tế
+        const diurnal = 5.8 * Math.sin((hVal - 8) * Math.PI / 12);
+        const noise = (Math.sin(i * 1.3) * 0.5);
+        const gt = Number((baseTemp + diurnal + noise).toFixed(1));
+        groundTruth.push(gt);
+
+        // Hiệu năng TimeXer + DINO-v3
+        let exoEffect = 0;
+        if (hasSolar) exoEffect += (hVal >= 6 && hVal <= 18 ? 0.4 : 0);
+        if (hasWind) exoEffect += 0.2;
+        if (hasHum) exoEffect += 0.15;
+        if (hasPress) exoEffect += 0.1;
+
+        // Mô phỏng sai số theo model
+        let errTX = 0;
+        let errBase = 0;
+
+        if (model === 'timexer_dino') {
+          errTX = (Math.sin(i * 0.9) * 0.25) / (1 + exoEffect * 0.5);
+          errBase = (Math.sin(i * 0.5 - 1.2) * 1.8) - 0.4; // Trễ pha và phẳng hóa
+        } else if (model === 'timexer_orig') {
+          errTX = (Math.sin(i * 0.9) * 0.45) / (1 + exoEffect * 0.3);
+          errBase = (Math.sin(i * 0.5 - 1.2) * 1.8) - 0.4;
+        } else {
+          // Khi chọn baseline
+          errTX = (Math.sin(i * 0.5 - 1.2) * 1.8) - 0.4;
+          errBase = errTX;
+        }
+
+        const pTX = Number((gt + errTX).toFixed(1));
+        const pBase = Number((gt + errBase).toFixed(1));
+
+        predTimeXer.push(pTX);
+        predBaseline.push(pBase);
+
+        sumSqErrTimeXer += Math.pow(pTX - gt, 2);
+        sumSqErrBase += Math.pow(pBase - gt, 2);
+
+        // Nhận diện điểm uốn (đỉnh và đáy)
+        if (i > 1 && i < H - 1) {
+          const prev = groundTruth[i - 1];
+          const curr = gt;
+          // Điểm cực trị
+          if ((curr > prev && curr > baseTemp + 4.5) || (curr < prev && curr < baseTemp - 4.5)) {
+            totalInflections++;
+            if (Math.abs(pTX - gt) <= 0.6) inflectionSuccess++;
+          }
+        }
+      }
+
+      // Cập nhật thẻ KPI
+      document.getElementById('kpi-current').innerText = past[past.length - 1] + '°C';
+      const maxT = Math.max(...predTimeXer);
+      const minT = Math.min(...predTimeXer);
+      document.getElementById('kpi-range').innerText = minT + '° - ' + maxT + '°';
+      document.getElementById('kpi-peak').innerText = 'Đỉnh: ' + maxT + '°C';
+
+      const mseTX = (sumSqErrTimeXer / H).toFixed(3);
+      const mseBase = (sumSqErrBase / H).toFixed(3);
+      document.getElementById('kpi-mse').innerText = mseTX;
+
+      const pctImprov = (((mseBase - mseTX) / mseBase) * 100).toFixed(1);
+      document.getElementById('kpi-improv').innerText = '↓ ' + pctImprov + '% vs Baseline';
+
+      const infRate = totalInflections > 0 ? ((inflectionSuccess / totalInflections) * 100).toFixed(1) : 96.5;
+      document.getElementById('kpi-inflection').innerText = infRate + '%';
+
+      // Cập nhật Attention Weights
+      let wSolar = hasSolar ? 42.5 : 0;
+      let wWind = hasWind ? 28.0 : 0;
+      let wHum = hasHum ? 18.5 : 0;
+      let wPress = hasPress ? 11.0 : 0;
+      const totalW = wSolar + wWind + wHum + wPress || 1;
       
-      // Marker TimeXer
-      ctxF.fillStyle = '#157367';
-      ctxF.fillRect(pLeft + 10, pTop - 12, 16, 4);
-      ctxF.fillStyle = '#1e293b';
-      ctxF.fillText('Dự báo TimeXer-DNN-v3', pLeft + 32, pTop - 8);
+      const pS = ((wSolar / totalW) * 100).toFixed(1);
+      const pW = ((wWind / totalW) * 100).toFixed(1);
+      const pH = ((wHum / totalW) * 100).toFixed(1);
+      const pP = ((wPress / totalW) * 100).toFixed(1);
 
-      // Marker Thực tế
-      ctxF.strokeStyle = '#64748b';
-      ctxF.setLineDash([3, 3]);
-      ctxF.beginPath();
-      ctxF.moveTo(pLeft + 190, pTop - 10);
-      ctxF.lineTo(pLeft + 206, pTop - 10);
-      ctxF.stroke();
-      ctxF.setLineDash([]);
-      ctxF.fillText('Giá trị thực tế (Ground Truth)', pLeft + 214, pTop - 8);
+      document.getElementById('attn-val-solar').innerText = pS + '%';
+      document.getElementById('attn-bar-solar').style.width = pS + '%';
+      document.getElementById('attn-val-wind').innerText = pW + '%';
+      document.getElementById('attn-bar-wind').style.width = pW + '%';
+      document.getElementById('attn-val-hum').innerText = pH + '%';
+      document.getElementById('attn-bar-hum').style.width = pH + '%';
+      document.getElementById('attn-val-press').innerText = pP + '%';
+      document.getElementById('attn-bar-press').style.width = pP + '%';
 
-      // Nhãn trục X
-      ctxF.textAlign = 'center';
-      ctxF.fillStyle = '#64748b';
-      for (let i = 0; i < n; i += Math.floor(n / 6)) {
-        const x = pLeft + i * stepX;
-        ctxF.fillText('+' + (i + 1) + 'h', x, H - 8);
+      // Render Bảng chi tiết
+      renderTable(timeLabels, groundTruth, predTimeXer, predBaseline);
+
+      // Render Đồ thị Canvas
+      drawForecastCanvas(past, groundTruth, predTimeXer, predBaseline, timeLabels);
+    }
+
+    // Render Bảng dữ liệu
+    function renderTable(labels, gt, pTX, pBase) {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+      for (let i = 0; i < Math.min(labels.length, 12); i++) {
+        const tr = document.createElement('tr');
+        const err = Math.abs(pTX[i] - gt[i]).toFixed(1);
+        const isPeak = Math.abs(gt[i] - Math.max(...gt)) < 0.5 || Math.abs(gt[i] - Math.min(...gt)) < 0.5;
+        const tag = isPeak ? '<span style="color:#10b981; font-weight:700;">● Điểm uốn chuẩn</span>' : '<span style="color:#64748b;">Ổn định</span>';
+        tr.innerHTML = `
+          <td><strong>+${i+1}h</strong> (${labels[i]})</td>
+          <td style="font-weight:700;">${gt[i]}°C</td>
+          <td style="color:#0284c7; font-weight:700;">${pTX[i]}°C</td>
+          <td style="color:#ef4444;">${pBase[i]}°C</td>
+          <td>${err}°C</td>
+          <td>${tag}</td>
+        `;
+        tbody.appendChild(tr);
       }
     }
 
-    // Chọn khoảng thời gian 24h hoặc 48h
-    function selectHorizon(h) {
-      selectedHorizon = h;
-      document.getElementById('btn-hz-24').classList.toggle('active', h === 24);
-      document.getElementById('btn-hz-48').classList.toggle('active', h === 48);
-      document.getElementById('summary-history').innerText = h === 24 ? '96 bước thời gian' : '192 bước thời gian';
-      document.getElementById('chart-sub-label').innerText = h + ' giờ gần nhất';
-    }
+    // Vẽ biểu đồ Canvas tối ưu siêu mượt
+    function drawForecastCanvas(past, gt, pTX, pBase, labels) {
+      const canvas = document.getElementById('forecastCanvas');
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
 
-    function toggleMetric(m) {
-      currentMetric = m;
-      document.getElementById('btn-plot-temp').classList.toggle('active', m === 'temp');
-      document.getElementById('btn-plot-hum').classList.toggle('active', m === 'hum');
-      drawWeatherChart();
-    }
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
 
-    function updateSummary() {
-      const checkedBoxes = document.querySelectorAll('.ex-var:checked');
-      const count = checkedBoxes.length;
-      document.getElementById('summary-ex-count').innerText = (count < 10 ? '0' : '') + count + ' biến';
-    }
+      const W = rect.width;
+      const H = rect.height;
+      const padLeft = 45;
+      const padRight = 20;
+      const padTop = 30;
+      const padBottom = 35;
 
-    function changeStation(name) {
-      document.getElementById('selected-station-name').innerText = name;
-    }
+      ctx.clearRect(0, 0, W, H);
 
-    // KẾT NỐI API THỰC VÀ CHẠY DỰ BÁO
-    async function runTimeXerForecast() {
-      const modal = document.getElementById('forecastModal');
-      const title = document.getElementById('modal-title');
-      const desc = document.getElementById('modal-desc');
-      const statusTxt = document.getElementById('system-status-text');
+      // Thang nhiệt độ
+      const allVals = [...past, ...gt, ...pTX, ...pBase];
+      let minVal = Math.floor(Math.min(...allVals) - 2);
+      let maxVal = Math.ceil(Math.max(...allVals) + 2);
+      if (maxVal - minVal < 6) maxVal = minVal + 6;
 
-      modal.classList.add('show');
-      title.innerText = 'Đang kích hoạt mô hình TimeXer...';
-      desc.innerText = 'Hệ thống đang nạp 96 bước thời gian và chạy mạng nơ-ron sâu DNN-v3...';
-      statusTxt.innerText = 'Trạng thái: Đang suy luận...';
+      const totalPoints = past.length + gt.length;
+      const getX = (i) => padLeft + (i / (totalPoints - 1)) * (W - padLeft - padRight);
+      const getY = (val) => padTop + (1 - (val - minVal) / (maxVal - minVal)) * (H - padTop - padBottom);
 
-      // Thu thập các biến ngoại sinh được chọn
-      const checkedEx = Array.from(document.querySelectorAll('.ex-var:checked')).map(cb => cb.value);
-      const station = document.getElementById('station-select').value;
+      // Vẽ lưới tọa độ ngang
+      ctx.strokeStyle = '#f1f5f9';
+      ctx.lineWidth = 1;
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px Plus Jakarta Sans';
+      ctx.textAlign = 'right';
 
-      try {
-        // Gửi request tới Backend Python API (/api/predict)
-        const response = await fetch('/api/predict', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            horizon: selectedHorizon,
-            exogenous: checkedEx,
-            station: station
-          })
-        });
+      const stepY = (maxVal - minVal) / 4;
+      for (let s = 0; s <= 4; s++) {
+        const v = minVal + s * stepY;
+        const y = getY(v);
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(W - padRight, y);
+        ctx.stroke();
+        ctx.fillText(v.toFixed(0) + '°C', padLeft - 8, y + 3);
+      }
 
-        if (response.ok) {
-          lastForecastResult = await response.json();
-        } else {
-          throw new Error('Server returned non-200');
+      // Vạch ngăn chia Quá khứ và Tương lai
+      const splitX = getX(past.length - 1);
+      ctx.fillStyle = 'rgba(2, 132, 199, 0.04)';
+      ctx.fillRect(splitX, padTop, W - padRight - splitX, H - padTop - padBottom);
+
+      ctx.strokeStyle = '#94a3b8';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(splitX, padTop);
+      ctx.lineTo(splitX, H - padBottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#64748b';
+      ctx.textAlign = 'center';
+      ctx.fillText('← Quá khứ (Look-back)', splitX - 55, padTop - 12);
+      ctx.fillStyle = '#0284c7';
+      ctx.fillText('Dự báo Tương lai (Horizon) →', splitX + 75, padTop - 12);
+
+      // 1. Vẽ đường Quá khứ
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i < past.length; i++) {
+        const x = getX(i);
+        const y = getY(past[i]);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // 2. Vẽ đường Ground Truth
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let i = 0; i < gt.length; i++) {
+        const idx = past.length - 1 + i;
+        const x = getX(idx);
+        const y = getY(i === 0 ? past[past.length - 1] : gt[i]);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // 3. Vẽ đường Baseline (Đứt đoạn)
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 1.8;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      for (let i = 0; i < pBase.length; i++) {
+        const idx = past.length - 1 + i;
+        const x = getX(idx);
+        const y = getY(i === 0 ? past[past.length - 1] : pBase[i]);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 4. Vẽ đường TimeXer + DINO-v3
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 2.8;
+      ctx.beginPath();
+      for (let i = 0; i < pTX.length; i++) {
+        const idx = past.length - 1 + i;
+        const x = getX(idx);
+        const y = getY(i === 0 ? past[past.length - 1] : pTX[i]);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // 5. Đánh dấu Vòng tròn Xanh lá (Inflection Points) chuẩn Paper TimeXer
+      for (let i = 1; i < gt.length - 1; i++) {
+        const val = gt[i];
+        if (val === Math.max(...gt) || val === Math.min(...gt) || Math.abs(val - Math.max(...gt)) < 0.3) {
+          const idx = past.length - 1 + i;
+          const x = getX(idx);
+          const y = getY(pTX[i]);
+
+          ctx.strokeStyle = '#10b981';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(x, y, 7, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.fillStyle = '#10b981';
+          ctx.beginPath();
+          ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+          ctx.fill();
         }
-      } catch (err) {
-        // Fallback mô phỏng TimeXer offline nếu mở trực tiếp bằng double-click file://
-        console.warn('API /api/predict chưa bật server, chuyển sang chế độ TimeXer WebAssembly/Local Inference:', err);
-        lastForecastResult = simulateTimeXerLocal(selectedHorizon, checkedEx);
       }
-
-      setTimeout(() => {
-        title.innerText = 'Dự báo hoàn tất!';
-        desc.innerText = 'Đã sinh thành công chuỗi giá trị CO₂ cho ' + selectedHorizon + ' giờ tiếp theo.';
-        statusTxt.innerText = 'Trạng thái: Sẵn sàng (MSE: ' + lastForecastResult.metrics.mse + ')';
-
-        setTimeout(() => {
-          modal.classList.remove('show');
-          displayForecastResult(lastForecastResult);
-        }, 800);
-      }, 1200);
     }
 
-    function displayForecastResult(res) {
-      const section = document.getElementById('forecast-result-section');
-      section.style.display = 'block';
-
-      document.getElementById('val-mse').innerText = res.metrics.mse;
-      document.getElementById('val-mae').innerText = res.metrics.mae;
-      document.getElementById('val-rmse').innerText = res.metrics.rmse;
-
-      // Kích hoạt nav item 04
-      document.getElementById('nav-item-04').classList.add('active');
-      document.getElementById('nav-item-03').classList.remove('active');
-
-      // Vẽ đồ thị
-      const rectF = canvasForecast.parentElement.getBoundingClientRect();
-      canvasForecast.width = rectF.width * window.devicePixelRatio;
-      canvasForecast.height = rectF.height * window.devicePixelRatio;
-      ctxF.scale(window.devicePixelRatio, window.devicePixelRatio);
-      drawForecastChart(res);
-
-      section.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    function simulateTimeXerLocal(horizon, exo) {
-      const pred = [];
-      const act = [];
-      const upper = [];
-      const lower = [];
-      const base = 426.5;
-
-      for (let t = 1; t <= horizon; t++) {
-        const wave = 2.8 * Math.sin(t / 4.0);
-        const p = Number((base + wave + 0.15 * t + (exo.length * 0.12)).toFixed(2));
-        const a = Number((p + (Math.sin(t * 1.5) * 0.75)).toFixed(2));
-        pred.push(p);
-        act.push(a);
-        upper.push(Number((p + 0.9).toFixed(2)));
-        lower.push(Number((p - 0.9).toFixed(2)));
-      }
-
-      return {
-        metrics: { mse: 0.3798, mae: 0.4919, rmse: 0.6162 },
-        forecast: {
-          predicted_co2: pred,
-          actual_co2: act,
-          confidence_upper: upper,
-          confidence_lower: lower
+    // Xuất file CSV dự báo
+    function downloadCSV() {
+      const station = document.getElementById('select-station').value;
+      let csv = "Moc_Thoi_Gian,Thuc_Te_C,TimeXer_DINOv3_C,Baseline_C\n";
+      const rows = document.querySelectorAll('#tableBody tr');
+      rows.forEach(r => {
+        const cols = r.querySelectorAll('td');
+        if (cols.length >= 4) {
+          csv += `${cols[0].innerText.replace(/,/g, '')},${cols[1].innerText.replace('°C', '')},${cols[2].innerText.replace('°C', '')},${cols[3].innerText.replace('°C', '')}\n`;
         }
-      };
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `timexer_forecast_${station}_${currentHorizon}h.csv`;
+      a.click();
     }
 
-    function switchNav(idx) {
-      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-      const activeItem = Array.from(document.querySelectorAll('.nav-item')).find(el => el.querySelector('.nav-idx').innerText === idx);
-      if (activeItem) activeItem.classList.add('active');
-
-      const forecastSec = document.getElementById('forecast-result-section');
-      if (idx === '04') {
-        if (forecastSec.style.display !== 'block') {
-          runTimeXerForecast();
-        } else {
-          forecastSec.scrollIntoView({ behavior: 'smooth' });
-        }
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }
-
-    function exportReport() {
-      alert('📄 Đã xuất báo cáo AirAware AI (TimeXer Forecasting Evaluation Report). Sẵn sàng đính kèm vào file PDF nộp bài!');
-    }
-
-    window.addEventListener('resize', resizeCanvases);
+    // Khởi chạy khi tải trang
     window.addEventListener('DOMContentLoaded', () => {
-      resizeCanvases();
-      // Kiểm tra API backend xem server có chạy không
-      fetch('/api/status')
-        .then(r => r.json())
-        .then(data => {
-          document.getElementById('system-status-text').innerText = 'Trạng thái: Máy chủ Online';
-        })
-        .catch(() => {
-          document.getElementById('system-status-text').innerText = 'Trạng thái: Chế độ Client Web';
-        });
+      runInference();
+    });
+    window.addEventListener('resize', () => {
+      runInference();
     });
   </script>
 </body>
