@@ -149,7 +149,10 @@ class EnEmbedding(nn.Module):
 
     def forward(self, x):
         n_vars = x.shape[1]
-        glb = self.glb_token.repeat((x.shape[0], 1, 1, 1))
+        if self.glb_token.shape[1] < n_vars:
+            glb = self.glb_token.repeat(x.shape[0], n_vars, 1, 1)[:, :n_vars, :, :]
+        else:
+            glb = self.glb_token[:, :n_vars, :, :].repeat((x.shape[0], 1, 1, 1))
 
         x = x.unfold(dimension=-1, size=self.patch_len, step=self.patch_len)
         x = torch.reshape(x, (x.shape[0] * x.shape[1], x.shape[2], x.shape[3]))
@@ -307,8 +310,8 @@ class Model(nn.Module):
         self.pred_len = configs.pred_len
         self.patch_len = getattr(configs, 'patch_len', 16)
         self.patch_num = int(self.seq_len // self.patch_len)
-        self.n_vars = configs.enc_in
         self.features = configs.features
+        self.n_vars = 1 if configs.features == 'MS' else configs.enc_in
 
         # 1. Embedding
         self.enc_embedding = EnEmbedding(self.n_vars, configs.d_model, self.patch_len, configs.dropout)

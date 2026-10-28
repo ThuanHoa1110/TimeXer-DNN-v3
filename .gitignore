@@ -19,12 +19,15 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-checkpoints/
+checkpoints/*
+!checkpoints/timexer_dinov3_best.pth
+!checkpoints/scaler_params.json
 results/
 test_results/
 .idea/
 .vscode/
 .venv/
 /real_weather_large_dataset.csv
+scratch/
 data/stations/
 *.csv.gz

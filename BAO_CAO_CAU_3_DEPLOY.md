@@ -55,28 +55,52 @@
 - **Mục tiêu dự báo (Endogenous Target):** **Nhiệt độ không khí (°C)** tại trạm khí tượng được chỉ định.
 - **Biến ngoại sinh bổ trợ (Exogenous Drivers):** Bức xạ mặt trời ($W/m^2$), Vận tốc gió 10m ($m/s$), Độ ẩm tương đối (%), Khí áp bề mặt ($hPa$).
 
-#### B. Tối ưu hóa Đầu vào Người dùng (Inputs - Tinh gọn, trực quan, không bắt nhập số tay)
-1. **Chọn Trạm mục tiêu (Target Station):** Dropdown 6 trạm quan trắc tự động Hà Nội (`Hoàn Kiếm`, `Ba Đình`, `Cầu Giấy`, `Hà Đông`, `Đông Anh`, `Sóc Sơn`).
-2. **Chọn Khoảng thời gian dự báo (Horizon):** 3 nút chọn nhanh: `24 giờ (1 ngày)`, `48 giờ (2 ngày)`, `72 giờ (3 ngày - Chuẩn Paper TimeXer)`.
-3. **Chọn Biến ngoại sinh tích hợp:** 4 switches/checkboxes bật/tắt bức xạ, gió, độ ẩm, khí áp.
-4. **Chọn Mô hình suy luận:** `TimeXer + DINO-v3 Loss (Đề xuất)`, `TimeXer Gốc`, `Baseline (Không ngoại sinh)`.
-5. **Nút kích hoạt:** `[ ⚡ Chạy Suy luận TimeXer ]` & `[ 🎲 Đổi tình huống mẫu (Nắng nóng / Rét đậm / Gió mùa) ]`.
+#### B. Tối ưu hóa Đầu vào Người dùng & Xử lý Dữ liệu Thực tế (Data Input & Preprocessing)
+1. **Hỗ trợ 2 phương thức nạp dữ liệu thực:**
+   - **Cách 1: Upload file CSV của người dùng:** Người dùng có thể kéo thả tệp CSV quan trắc của mình (tối thiểu 96 bước thời gian). Hệ thống tự động kiểm tra định dạng cột, căn chỉnh tần số và nạp vào Tensor.
+   - **Cách 2: Chọn mẫu thực tế từ kho 6 trạm quan trắc:** Chọn trực tiếp trạm (`Hoàn Kiếm`, `Ba Đình`, `Cầu Giấy`, `Hà Đông`, `Đông Anh`, `Sóc Sơn`) và các sự kiện thời tiết lịch sử (Đợt nắng nóng kỷ lục, đợt rét đậm không khí lạnh, pha chuyển mùa).
+2. **Cấu hình tham số suy luận:**
+   - **Khoảng thời gian dự báo (Horizon $H$):** `24 bước`, `48 bước` hoặc `72 bước` (chuẩn Paper TimeXer).
+   - **Biến ngoại sinh:** Bật/tắt Cross-Attention cho Bức xạ, Gió, Độ ẩm, Khí áp.
+3. **Tiền xử lý và chuyển đổi Tensor:**
+   - Chuẩn hóa RevIN Reversible Instance Normalization và StandardScaler ($\mu, \sigma$) lưu tại `checkpoints/scaler_params.json`.
+   - Tạo ma trận nhúng thời gian $X_{\text{mark}} \in \mathbb{R}^{B \times L \times 4}$.
 
-#### C. Thiết kế Đầu ra Hiển thị (Outputs - Chuẩn, đầy đủ, ít thành phần thừa)
-1. **Thanh 4 Thẻ KPI tóm tắt:** Nhiệt độ hiện tại, Biên độ nhiệt tương lai ($T_{\text{max}} - T_{\text{min}}$), Sai số MSE (% cải thiện so với baseline), và Tỷ lệ bắt điểm uốn Inflection Points.
-2. **Biểu đồ Dự báo Chuỗi thời gian tương tác (Interactive Canvas Chart):**
-   - Vẽ đồng thời 4 đường: *Quá khứ quan sát*, *Giá trị thực tế (Ground Truth)*, *Dự báo TimeXer-DINOv3*, và *Dự báo Baseline*.
+#### C. Kiến trúc Model Serving & Thực thi Suy luận PyTorch Thực tế (True Inference Engine)
+1. **Module suy luận độc lập (`inference_engine.py`):**
+   - Class `TimeXerInferenceEngine` tự động phát hiện thiết bị (`CUDA` hoặc `CPU`).
+   - Nạp cấu trúc mạng `TimeXer_DINOv3` và trọng số checkpoint chính xác: `checkpoints/timexer_dinov3_best.pth` (~2.1 MB).
+   - Thực thi Forward Pass trên PyTorch: `with torch.no_grad(): outputs = model(batch_x, batch_x_mark, dec_inp, batch_y_mark)`.
+   - Độ trễ suy luận siêu tốc: **10.72 ms trên CPU**, không dùng bất kỳ dữ liệu hay công thức giả lập sóng sin nào.
+2. **Kịch bản huấn luyện & xuất Checkpoint (`scripts/train_and_save_checkpoint.py`):**
+   - Huấn luyện mô hình trực tiếp trên các lát cắt chuỗi thời gian khí tượng thực tế với hàm mất mát `DINOv3Loss` (MSE + Self-Distillation + Gram Anchoring Loss).
+   - Tự động xuất file trọng số `.pth` và thông số scaler chuẩn hóa.
+
+#### D. Thiết kế Đầu ra Hiển thị (Outputs - Chuẩn, đầy đủ, ít thành phần thừa)
+1. **Thanh 4 Thẻ KPI tóm tắt:** Nhiệt độ hiện tại ($T_0$), Biên độ nhiệt dự kiến ($T_{\text{max}} - T_{\text{min}}$), Thời gian phản hồi suy luận (Latency theo ms), và Số điểm uốn nhiệt độ cực trị bắt được.
+2. **Biểu đồ Dự báo Chuỗi thời gian tương tác:**
+   - Vẽ đồng thời: *Quá khứ quan sát thực tế (Look-back $L=96$)*, *Đường dự báo thực từ PyTorch Model*, và *Giá trị thực tế kiểm chứng (Ground Truth - nếu có)*.
    - Đánh dấu **vòng tròn xanh lá ($\bigcirc$)** tại các điểm uốn đỉnh/đáy nhiệt độ theo chuẩn Paper TimeXer.
-3. **Biểu đồ đóng góp Biến Ngoại sinh (Cross-Attention Weights):** Bức xạ mặt trời (42.5%), Tốc độ gió (28.0%), Độ ẩm (18.5%), Khí áp (11.0%).
-4. **Bảng dữ liệu chi tiết theo từng mốc giờ + Nút tải file CSV dự báo.**
+3. **Biểu đồ đóng góp Biến Ngoại sinh (Explainable AI - XAI):** Tỷ lệ % ảnh hưởng của Bức xạ mặt trời, Tốc độ gió, Độ ẩm, và Khí áp.
+4. **Bảng số liệu chi tiết theo từng mốc giờ + Nút tải file CSV kết quả dự báo thực.**
 
-#### D. Hướng dẫn Deploy Chi tiết (Đảm bảo Link hoạt động vĩnh viễn 24/7, Không bao giờ chết server)
-- **🔗 KÊNH 1: GitHub Pages (Chính thức qua GitHub Actions & Nhánh `gh-pages`)**
+#### E. Hướng dẫn Chạy Thử & Deploy Hệ thống
+- **🖥️ CHẠY LOCAL PYTHON MODEL SERVING (Streamlit Web Dashboard):**
+  ```bash
+  # Kích hoạt môi trường và khởi chạy dashboard tương tác:
+  streamlit run streamlit_app.py
+  ```
+- **🌐 CHẠY REST API SERVER (Python HTTP / JSON Server):**
+  ```bash
+  # Khởi chạy server phục vụ API suy luận:
+  python app.py
+  # Endpoint suy luận: POST http://localhost:8080/api/predict
+  ```
+- **🔗 KÊNH 1: Streamlit Community Cloud (Model Serving Online 24/7)**
+  - Mã nguồn hoàn thiện tại [`streamlit_app.py`](./streamlit_app.py), tích hợp trọn gói Checkpoint PyTorch. Kết nối trực tiếp trên [share.streamlit.io](https://share.streamlit.io).
+- **🔗 KÊNH 2: GitHub Pages (Chính thức qua GitHub Actions & Nhánh `gh-pages`)**
   - **Link trực tiếp:** 👉 **[https://thuanhoa1110.github.io/TimeXer-DNN-v3/](https://thuanhoa1110.github.io/TimeXer-DNN-v3/)**
-  - Tự động kích hoạt qua file `.github/workflows/deploy_pages.yml` và nhánh `gh-pages`. Chạy 100% Client-side mượt mà, zero downtime.
-- **🔗 KÊNH 2: Vercel Cloud Hosting (Dự phòng 1-Click)**
-  - Tệp `vercel.json` đã tích hợp sẵn. Bấm Import repo trên Vercel nhận ngay link:  
-    👉 **`https://timexer-dnn-v3.vercel.app`**
-- **🔗 KÊNH 3: Streamlit Community Cloud (Dành cho bản Python tương tác)**
-  - Mã nguồn hoàn thiện tại [`streamlit_app.py`](./streamlit_app.py). Kết nối trực tiếp trên [share.streamlit.io](https://share.streamlit.io).
+  - Tự động kích hoạt qua file `.github/workflows/deploy_pages.yml`. Chạy mượt mà trên mọi trình duyệt.
+- **🔗 KÊNH 3: Vercel Cloud Hosting (Dự phòng 1-Click)**
+  - Tệp `vercel.json` đã tích hợp sẵn: 👉 **`https://timexer-dnn-v3.vercel.app`**
 
