@@ -61,51 +61,60 @@ class DINOv3Loss(nn.Module):
           - student_proj, teacher_proj: Vector biểu diễn toàn cục [B, out_dim]
           - student_patches, anchor_patches: Tensor đặc trưng patch [B, N, D]
         """
-        # 1. Thành phần 1: Task Forecasting Loss
+        # 1. Component 1: Task Forecasting Loss (MSE / MAE)
         loss_task = self.task_criterion(pred, true)
 
-        # 2. Thành phần 2: DINO Self-Distillation Loss
-        loss_distill = torch.tensor(0.0, device=pred.device)
-        if student_proj is not None and teacher_proj is not None:
-            # Chuẩn hóa nhiệt độ Student & Teacher
-            s_out = student_proj / self.student_temp
-            t_out = F.softmax((teacher_proj - self.center) / self.teacher_temp, dim=-1)
+        # 2. Component 2: DINO Self-Distillation Loss
+        if student_proj is None or teacher_proj is None:
+            # Adaptive global projection for end-to-end temporal forecasting output
+            B = pred.shape[0]
+            s_flat = pred.reshape(B, 1, -1)
+            t_flat = true.detach().reshape(B, 1, -1)
+            student_proj = F.interpolate(s_flat, size=self.out_dim, mode='linear', align_corners=False).squeeze(1)
+            teacher_proj = F.interpolate(t_flat, size=self.out_dim, mode='linear', align_corners=False).squeeze(1)
 
-            # Cross-entropy loss: H(P_t, P_s) = - sum( P_t * log_softmax(P_s) )
-            log_s_out = F.log_softmax(s_out, dim=-1)
-            loss_distill = -torch.mean(torch.sum(t_out * log_s_out, dim=-1))
+        # Temperature sharpening and Softmax
+        s_out = student_proj / self.student_temp
+        t_out = F.softmax((teacher_proj - self.center) / self.teacher_temp, dim=-1)
 
-            # Cập nhật Center vector cho bước kế tiếp
+        # Cross-entropy distillation loss: H(P_t, P_s) = - sum( P_t * log_softmax(P_s) )
+        log_s_out = F.log_softmax(s_out, dim=-1)
+        loss_distill = -torch.mean(torch.sum(t_out * log_s_out, dim=-1))
+
+        # Dynamic EMA centering update during training
+        if self.training:
             self.update_center(teacher_proj.detach())
 
-        # 3. Thành phần 3: DINOv3 Gram Matrix Anchoring Loss
-        loss_gram = torch.tensor(0.0, device=pred.device)
-        if student_patches is not None:
-            # Nếu không truyền anchor ngoài, sử dụng bản sao detach chuẩn hóa làm anchor ổn định
-            if anchor_patches is None:
-                anchor_patches = student_patches.detach()
+        # 3. Component 3: DINOv3 Gram Matrix Anchoring Loss
+        if student_patches is None:
+            # Segment temporal series into patch windows [B, num_patches, patch_dim]
+            B, L, C = pred.shape
+            chunk_size = max(1, min(L // 4, 16))
+            num_chunks = max(1, L // chunk_size)
+            student_patches = pred[:, :num_chunks * chunk_size, :].reshape(B, num_chunks, -1)
+            anchor_patches = true.detach()[:, :num_chunks * chunk_size, :].reshape(B, num_chunks, -1)
+        elif anchor_patches is None:
+            anchor_patches = student_patches.detach()
 
-            # Chuẩn hóa L2 trên từng token patch
-            norm_s = F.normalize(student_patches, dim=-1)  # [B, N, D]
-            norm_a = F.normalize(anchor_patches, dim=-1)   # [B, N, D]
+        # L2-normalize patch tokens
+        norm_s = F.normalize(student_patches, dim=-1)
+        norm_a = F.normalize(anchor_patches, dim=-1)
 
-            # Tính Gram Matrix: G = S * S^T đo lường tương quan cặp giữa các patch
-            gram_s = torch.bmm(norm_s, norm_s.transpose(1, 2))  # [B, N, N]
-            gram_a = torch.bmm(norm_a, norm_a.transpose(1, 2))  # [B, N, N]
+        # Gram matrices: G = S * S^T measuring relational topology across patches
+        gram_s = torch.bmm(norm_s, norm_s.transpose(1, 2))
+        gram_a = torch.bmm(norm_a, norm_a.transpose(1, 2))
 
-            # Frobenius norm giữa 2 ma trận Gram
-            n_patches = norm_s.shape[1]
-            loss_gram = F.mse_loss(gram_s, gram_a) * (n_patches ** 2) / 100.0
+        # Frobenius distance between student Gram matrix and anchor structure
+        loss_gram = F.mse_loss(gram_s, gram_a)
 
-        # Tổng hợp Loss DINO-v3
+        # Total DINO-v3 Composite Loss
         loss_total = loss_task + (self.lambda_distill * loss_distill) + (self.lambda_gram * loss_gram)
 
-        # Trả về cả Loss tổng và bảng bóc tách chi tiết (loss dict)
         loss_details = {
             'loss_total': loss_total.item(),
             'loss_task': loss_task.item(),
-            'loss_distill': loss_distill.item() if isinstance(loss_distill, torch.Tensor) else 0.0,
-            'loss_gram': loss_gram.item() if isinstance(loss_gram, torch.Tensor) else 0.0
+            'loss_distill': loss_distill.item() if isinstance(loss_distill, torch.Tensor) else float(loss_distill),
+            'loss_gram': loss_gram.item() if isinstance(loss_gram, torch.Tensor) else float(loss_gram)
         }
         return loss_total, loss_details
 

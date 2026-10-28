@@ -55,9 +55,98 @@ $$\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{task}} + \lambda_{\text{distil
 ```
 
 ### Key Advantages of Integrating DINO-v3 Loss:
-1. **Anti-Collapse Representation:** Centering ($c$) and teacher sharpening ($\tau_t = 0.04 < \tau_s = 0.1$) prevent all tokens from collapsing into trivial uniform vectors.
+1. **Anti-Collapse Representation:** Centering (EMA vector $c$) and teacher sharpening ($\tau_t = 0.04 < \tau_s = 0.1$) prevent all tokens from collapsing into trivial uniform vectors.
 2. **Local Correlation Preservation via Gram Anchoring:** The Gram matrix $G \in \mathbb{R}^{N \times N}$ maintains inter-patch correlation topology across thousands of training iterations, eliminating dense feature drift.
 3. **Superior Forecasting Generalization:** Latent representations learned under DINO-v3 self-supervision exhibit high generalization, enabling the `FlattenHead` forecasting head to reconstruct complex temporal curves and inflection points with significantly lower error compared to standard MSE alone.
+
+### 📍 Exact Source Code Implementation Locations of DINO-v3 Loss Function
+
+To clearly demonstrate where the DINO-v3 Composite Loss Function is implemented, integrated, and executed across the codebase:
+
+#### 1. Core Loss Class Definition: [`models/TimeXer_DINOv3.py`](./models/TimeXer_DINOv3.py#L13-L115)
+The complete `DINOv3Loss` module is implemented with all 3 loss components:
+```python
+class DINOv3Loss(nn.Module):
+    def __init__(self, task_criterion=nn.MSELoss(), student_temp=0.1, teacher_temp=0.04,
+                 center_momentum=0.9, lambda_distill=0.1, lambda_gram=0.05, out_dim=256):
+        super().__init__()
+        self.task_criterion = task_criterion
+        self.student_temp = student_temp
+        self.teacher_temp = teacher_temp
+        self.lambda_distill = lambda_distill
+        self.lambda_gram = lambda_gram
+        self.register_buffer("center", torch.zeros(1, out_dim))
+
+    def forward(self, pred, true, student_proj=None, teacher_proj=None, student_patches=None, anchor_patches=None):
+        # Component 1: Task Forecasting Loss (MSE / MAE)
+        loss_task = self.task_criterion(pred, true)
+
+        # Component 2: DINO Self-Distillation Loss with EMA Centering
+        s_out = student_proj / self.student_temp
+        t_out = F.softmax((teacher_proj - self.center) / self.teacher_temp, dim=-1)
+        loss_distill = -torch.mean(torch.sum(t_out * F.log_softmax(s_out, dim=-1), dim=-1))
+
+        # Component 3: DINOv3 Gram Matrix Anchoring Loss
+        norm_s = F.normalize(student_patches, dim=-1)
+        norm_a = F.normalize(anchor_patches, dim=-1)
+        gram_s = torch.bmm(norm_s, norm_s.transpose(1, 2))
+        gram_a = torch.bmm(norm_a, norm_a.transpose(1, 2))
+        loss_gram = F.mse_loss(gram_s, gram_a)
+
+        # Composite Loss Combination
+        loss_total = loss_task + (self.lambda_distill * loss_distill) + (self.lambda_gram * loss_gram)
+        return loss_total, {'loss_total': loss_total.item(), 'loss_task': loss_task.item(),
+                            'loss_distill': loss_distill.item(), 'loss_gram': loss_gram.item()}
+```
+
+#### 2. Loss Function Instantiation in Model: [`models/TimeXer.py`](./models/TimeXer.py#L285-L293)
+Integrated directly inside the unified TimeXer model class:
+```python
+# models/TimeXer.py - Line 6:
+from models.TimeXer_DINOv3 import DINOv3_Block, DINOv3_Encoder, DINOv3Loss
+
+# models/TimeXer.py - Lines 285-293:
+self.loss_fn = DINOv3Loss(
+    task_criterion=nn.MSELoss(),
+    student_temp=getattr(configs, 'dino_temp_s', 0.1),
+    teacher_temp=getattr(configs, 'dino_temp_t', 0.04),
+    lambda_distill=getattr(configs, 'dino_lambda_distill', 0.1),
+    lambda_gram=getattr(configs, 'dino_lambda_gram', 0.05),
+    out_dim=256
+)
+```
+
+#### 3. Training Loop Criterion & Logging: [`exp/exp_long_term_forecasting.py`](./exp/exp_long_term_forecasting.py#L35-L50)
+Selected automatically when training with `--loss dino_v3` or `--model TimeXer_DINOv3`:
+```python
+# exp/exp_long_term_forecasting.py - Lines 35-50:
+def _select_criterion(self):
+    loss_name = getattr(self.args, 'loss', 'MSE')
+    if loss_name in ['dino_v3', 'dino'] or getattr(self.args, 'model', '') in ['TimeXer_DINOv3', 'DINO_v3']:
+        from models.TimeXer_DINOv3 import DINOv3Loss
+        criterion = DINOv3Loss(
+            task_criterion=nn.MSELoss(),
+            student_temp=getattr(self.args, 'dino_temp_s', 0.1),
+            teacher_temp=getattr(self.args, 'dino_temp_t', 0.04),
+            lambda_distill=getattr(self.args, 'dino_lambda_distill', 0.1),
+            lambda_gram=getattr(self.args, 'dino_lambda_gram', 0.05)
+        )
+    return criterion
+
+# exp/exp_long_term_forecasting.py - Lines 168-173: Loss logging
+# Output format:
+# iters: 100, epoch: 1 | Total Loss: 0.285123 [Task: 0.245000, Distill: 0.025123, Gram: 0.015000]
+```
+
+#### 4. Hyperparameter Arguments: [`run.py`](./run.py#L87-L100)
+Registered command-line flags controlling DINO-v3 loss parameters:
+```python
+parser.add_argument('--loss', type=str, default='dino_v3', help='Loss function (dino_v3 / MSE / MAE)')
+parser.add_argument('--dino_temp_s', type=float, default=0.1, help='DINO student temperature tau_s')
+parser.add_argument('--dino_temp_t', type=float, default=0.04, help='DINO teacher sharpening temperature tau_t')
+parser.add_argument('--dino_lambda_distill', type=float, default=0.1, help='Self-distillation weight lambda_distill')
+parser.add_argument('--dino_lambda_gram', type=float, default=0.05, help='Gram matrix anchoring weight lambda_gram')
+```
 
 ---
 
@@ -149,13 +238,13 @@ To evaluate multi-variable time series forecasting with spatial-temporal exogeno
 *(Conforming to the methodology and publication figure standards of the original TimeXer paper - Yuxuan Wang et al., Tsinghua University)*:
 
 #### Figure P1: Problem Formulation – Endogenous Target vs Exogenous Drivers
-*(Replicating Paper Fig 1 & Fig 4: Spatial network diagram and Look-back $L=7$ days vs Forecast $H=3$ days)*
+*(Replicating Paper Fig 1 & Fig 4: Spatial network diagram and Look-back L = 7 days vs. Forecast H = 3 days)*
 <p align="center">
 <img src="./figures/timexer_paper_fig1_formulation.png" width="95%" alt="TimeXer Paper Formulation" />
 </p>
 
 #### Figure P2: Forecasting Showcase & Inflection Points Evaluation
-*(Replicating Paper Fig 11 & Fig 12: Green circle $\bigcirc$ for accurate inflection captures and Red circle $\bigcirc$ for failure without exogenous variables)*
+*(Replicating Paper Fig 11 & Fig 12: 🟢 Green circle indicates accurate inflection capture, and 🔴 Red circle denotes failure without exogenous variables)*
 <p align="center">
 <img src="./figures/timexer_paper_fig2_inflection_showcase.png" width="95%" alt="TimeXer Inflection Showcase" />
 </p>
@@ -173,7 +262,7 @@ To evaluate multi-variable time series forecasting with spatial-temporal exogeno
 </p>
 
 #### Figure P5: Scalability Benchmark on 6.3 Million Samples
-*(Replicating Paper Section 4.3.2 & Fig 8: Look-back horizon expansion $L \in \{96..720\}$ and linear GPU memory complexity $\mathcal{O}(C)$)*
+*(Replicating Paper Section 4.3.2 & Fig 8: Look-back horizon expansion L ∈ [96, 720] and linear GPU memory complexity O(C))*
 <p align="center">
 <img src="./figures/timexer_paper_fig5_scalability_benchmark.png" width="95%" alt="TimeXer Scalability Benchmark" />
 </p>
