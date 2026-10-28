@@ -80,16 +80,3 @@
 - **🔗 KÊNH 3: Streamlit Community Cloud (Dành cho bản Python tương tác)**
   - Mã nguồn hoàn thiện tại [`streamlit_app.py`](./streamlit_app.py). Kết nối trực tiếp trên [share.streamlit.io](https://share.streamlit.io).
 
----
-
-## 🚀 HƯỚNG DẪN SINH VIÊN SUBMIT BÀI LÊN GITHUB
-
-Sinh viên chỉ cần thực hiện 2 lệnh đơn giản sau trong terminal để đẩy toàn bộ bài sửa lên GitHub:
-
-```bash
-git add .
-git commit -m "Fix full 3 bai: Bo sung DINO-v3 Loss Function, Dataset 87k mau kem Kaggle EDA, va Github Actions auto deploy"
-git push origin main
-```
-
-Sau khi gõ lệnh trên, toàn bộ mã nguồn DINO-v3, notebook Kaggle và website AirAware AI sẽ lập tức hoạt động đồng bộ trên GitHub của bạn!

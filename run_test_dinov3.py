@@ -1,11 +1,10 @@
 """
 ========================================================================================
-SCRIPT KIỂM THỬ TOÀN DIỆN MÔ HÌNH TIMEXER VỚI BACKBONE VÀ HÀM LOSS DINO-v3
-Học phần: Chuyên đề Trí tuệ nhân tạo và Khoa học dữ liệu (65TTNT - Đại học Thủy Lợi)
-Nhiệm vụ 1: 
-  - Kiểm tra Encoder Backbone DINO-v3 (LayerScale + MHSA + Exogenous Fusion)
-  - Kiểm tra DINO-v3 Composite Loss Function (Task MSE + Self-Distillation + Gram Anchoring)
-  - Kiểm tra lan truyền ngược (Backward Gradient Flow)
+COMPREHENSIVE VERIFICATION SCRIPT FOR TIMEXER WITH DINO-v3 BACKBONE & LOSS FUNCTION
+Task 1:
+  - Verify DINO-v3 Backbone Encoder (LayerScale + MHSA + Exogenous Fusion)
+  - Verify DINO-v3 Composite Loss Function (Task MSE + Self-Distillation + Gram Anchoring)
+  - Verify Backward Gradient Flow
 ========================================================================================
 """
 import sys
