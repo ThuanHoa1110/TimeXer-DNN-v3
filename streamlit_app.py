@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import io
+import textwrap
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -16,6 +17,18 @@ if BASE_DIR not in sys.path:
 from inference_engine import TimeXerInferenceEngine
 
 # ==============================================================================
+# HÀM RENDER HTML AN TOÀN CHO STREAMLIT
+# ==============================================================================
+def render_html(html_str: str):
+    """
+    Loại bỏ khoảng trắng thụt đầu dòng (indentation) trước khi render qua st.markdown
+    để Markdown parser không bao giờ hiểu nhầm là khối mã nguồn (code block).
+    """
+    clean_str = textwrap.dedent(html_str).strip()
+    st.markdown(clean_str, unsafe_allow_html=True)
+
+
+# ==============================================================================
 # 1. THIẾT LẬP CẤU HÌNH & GIAO DIỆN (COMMERCIAL DESIGN SYSTEM)
 # ==============================================================================
 st.set_page_config(
@@ -26,7 +39,7 @@ st.set_page_config(
 )
 
 # Custom Styling lấy cảm hứng từ Tomorrow.io & Apple Weather
-st.markdown("""
+render_html("""
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
   
@@ -169,7 +182,7 @@ st.markdown("""
     flex-shrink: 0;
   }
   .hourly-time {
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     color: #94a3b8;
     font-weight: 600;
   }
@@ -215,14 +228,7 @@ st.markdown("""
     background: linear-gradient(90deg, #38bdf8 0%, #f59e0b 50%, #ef4444 100%);
   }
 
-  /* Section Containers */
-  .content-section {
-    background: rgba(30, 41, 59, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 16px;
-    padding: 22px 24px;
-    margin-bottom: 24px;
-  }
+  /* Section Titles */
   .section-title {
     font-size: 1.1rem;
     font-weight: 700;
@@ -233,7 +239,7 @@ st.markdown("""
     gap: 8px;
   }
 </style>
-""", unsafe_allow_html=True)
+""")
 
 
 # ==============================================================================
@@ -346,7 +352,7 @@ with st.sidebar:
     horizon_choice = st.radio(
         "Khung thời gian dự báo:",
         options=[24, 48, 72],
-        format_func=lambda x: f"{x} giờ tới ({x // 24} ngày)",
+        format_func=lambda x: f"{x} mốc tiếp theo ({x * 5 // 60}h {x * 5 % 60}p)",
         index=0
     )
 
@@ -361,13 +367,13 @@ with st.sidebar:
         )
 
     st.markdown("---")
-    st.markdown("""
+    render_html("""
     <div style='font-size:0.75rem; color:#64748b; line-height:1.4;'>
       Hệ thống vận hành liên tục 24/7.<br>
-      Dữ liệu cảm biến vi khí hậu tự động đồng bộ mỗi giờ.<br>
+      Dữ liệu cảm biến vi khí hậu tự động đồng bộ mỗi chu kỳ.<br>
       Tầm nhìn dự báo vi khí hậu chính xác cao.
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
 
 # ==============================================================================
@@ -415,7 +421,7 @@ if stations_data:
 # 5. GIAO DIỆN SẢN PHẨM THỰC THẾ (EXECUTIVE METEOROLOGICAL PLATFORM)
 # ==============================================================================
 # Header cấp cao
-st.markdown("""
+render_html("""
 <div class="executive-header">
   <div>
     <div class="brand-title">METEO-HANOI INTELLIGENCE™</div>
@@ -428,7 +434,7 @@ st.markdown("""
     </div>
   </div>
 </div>
-""", unsafe_allow_html=True)
+""")
 
 if not forecast_results:
     st.info("Đang đồng bộ dữ liệu quan trắc vi khí hậu...")
@@ -454,7 +460,7 @@ else:
         coldest_st_name = STATIONS_METADATA.get(coldest_st_key, {}).get("district", coldest_st_key)
 
         # 1. HỘP KHUYẾN NGHỊ VẬN HÀNH (TOMORROW.IO OPERATIONAL ADVISORY)
-        st.markdown(f"""
+        render_html(f"""
         <div class="advisory-card">
           <div class="advisory-title">⚡ Khuyến Cáo Vận Hành Đô Thị & Sức Khỏe Cộng Đồng</div>
           <div class="advisory-content">
@@ -464,51 +470,51 @@ else:
             Về đêm, nhiệt độ toàn thành phố hạ sâu nhất tại <b>{coldest_st_name}</b> xuống <b>{lowest_temp}°C</b>, điều kiện vi khí hậu thuận lợi.
           </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
         # 2. HỆ THỐNG 4 THẺ CHỈ SỐ VẬN HÀNH (METRICS TILES)
         c1, c2, c3, c4 = st.columns(4)
         with c1:
-            st.markdown(f"""
+            render_html(f"""
             <div class="kpi-tile">
               <div class="kpi-label">Nhiệt độ hiện tại</div>
               <div class="kpi-value">{avg_current}°C</div>
               <div class="kpi-subtext">Trung bình toàn địa bàn</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
         with c2:
-            st.markdown(f"""
+            render_html(f"""
             <div class="kpi-tile">
               <div class="kpi-label">Đỉnh nhiệt cao nhất</div>
               <div class="kpi-value" style="color:#f87171;">{highest_temp}°C</div>
               <div class="kpi-subtext">Ghi nhận tại {hottest_st_name}</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
         with c3:
-            st.markdown(f"""
+            render_html(f"""
             <div class="kpi-tile">
               <div class="kpi-label">Đáy nhiệt ban đêm</div>
               <div class="kpi-value" style="color:#38bdf8;">{lowest_temp}°C</div>
               <div class="kpi-subtext">Hạ nhiệt tại {coldest_st_name}</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
         with c4:
-            st.markdown(f"""
+            render_html(f"""
             <div class="kpi-tile">
               <div class="kpi-label">Chênh lệch Đảo Nhiệt (UHI)</div>
               <div class="kpi-value" style="color:#fbbf24;">+{uhi_gap}°C</div>
               <div class="kpi-subtext">Nội thành vs Vùng sinh thái</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
 
         st.markdown("<br>", unsafe_allow_html=True)
 
         # 3. BẢN ĐỒ VI KHÍ HẬU 3D TƯƠNG TÁC (TOMORROW.IO SPATIAL MAP VỚI PYDECK)
-        st.markdown("""
+        render_html("""
         <div class="section-title">
           <span>🗺️ Bản Đồ Không Gian Nhiệt Độ Trực Quan Hà Nội</span>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
         map_data = []
         for k, res in forecast_results.items():
@@ -595,11 +601,11 @@ else:
         st.markdown("<br>", unsafe_allow_html=True)
 
         # 4. THANH DẢI NHIỆT ĐỘ CÁC QUẬN (APPLE WEATHER STYLE RANGE BARS)
-        st.markdown("""
+        render_html("""
         <div class="section-title">
           <span>📊 Dải Biến Thiên Nhiệt Độ Đa Vùng (Min - Hiện Tại - Max)</span>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
         col_left, col_right = st.columns([1, 1])
         items_list = list(forecast_results.items())
@@ -614,7 +620,7 @@ else:
 
             target_col = col_left if idx % 2 == 0 else col_right
             with target_col:
-                st.markdown(f"""
+                render_html(f"""
                 <div class="temp-bar-container">
                   <div class="station-name-col">📍 {name_label}</div>
                   <div style="font-size:0.85rem; color:#38bdf8; font-weight:700;">{t_min:.1f}°</div>
@@ -626,16 +632,16 @@ else:
                     {t_curr:.1f}°C
                   </div>
                 </div>
-                """, unsafe_allow_html=True)
+                """)
 
         st.markdown("<br>", unsafe_allow_html=True)
 
         # 5. BIỂU ĐỒ METEOGRAM ĐA TRẠM CHUYÊN NGHIỆP (METEOBLUE STYLE)
-        st.markdown("""
+        render_html("""
         <div class="section-title">
-          <span>📈 Đồ Thị Sóng Nhiệt Theo Giờ (Multi-Station Meteogram)</span>
+          <span>📈 Đồ Thị Sóng Nhiệt Chuỗi Thời Gian (Multi-Station Meteogram)</span>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
         fig, ax = plt.subplots(figsize=(14, 5.6), dpi=130)
         fig.patch.set_facecolor('#0f172a')
@@ -679,11 +685,11 @@ else:
         st.markdown("<br>", unsafe_allow_html=True)
 
         # 6. BẢNG SO SÁNH & XUẤT BÁO CÁO DOANH NGHIỆP (EXPORT CSV)
-        st.markdown("""
+        render_html("""
         <div class="section-title">
           <span>📋 Bảng Tổng Hợp Tham Số Vi Khí Hậu Từng Phân Vùng</span>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
         summary_rows = []
         for st_k, res in forecast_results.items():
@@ -736,7 +742,7 @@ else:
         low_idx = int(np.argmin(pred_df['predicted_temperature'].values))
         low_time = pred_df['timestamp'].iloc[low_idx].strftime('%H:%M ngày %d/%m')
 
-        st.markdown(f"""
+        render_html(f"""
         <div class="advisory-card">
           <div class="advisory-title">⚡ Cảnh Báo Vi Khí Hậu: {loc_name}</div>
           <div class="advisory-content">
@@ -745,83 +751,84 @@ else:
             Đặc trưng phân vùng: <i>{meta.get('feature', 'Bình thường')}</i>.
           </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
         # 2. 4 THẺ CHỈ SỐ CỦA TRẠM
         c1, c2, c3, c4 = st.columns(4)
         with c1:
-            st.markdown(f"""
+            render_html(f"""
             <div class="kpi-tile">
               <div class="kpi-label">Nhiệt độ hiện tại</div>
               <div class="kpi-value">{m['current_temp']}°C</div>
               <div class="kpi-subtext">Quan trắc tức thời</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
         with c2:
-            st.markdown(f"""
+            render_html(f"""
             <div class="kpi-tile">
               <div class="kpi-label">Đỉnh nhiệt cao nhất</div>
               <div class="kpi-value" style="color:#f87171;">{m['predicted_max']}°C</div>
               <div class="kpi-subtext">Lúc {peak_time}</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
         with c3:
-            st.markdown(f"""
+            render_html(f"""
             <div class="kpi-tile">
               <div class="kpi-label">Đáy nhiệt ban đêm</div>
               <div class="kpi-value" style="color:#38bdf8;">{m['predicted_min']}°C</div>
               <div class="kpi-subtext">Lúc {low_time}</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
         with c4:
-            st.markdown(f"""
+            render_html(f"""
             <div class="kpi-tile">
               <div class="kpi-label">Biên độ nhiệt ngày đêm</div>
               <div class="kpi-value" style="color:#fbbf24;">{m['amplitude']}°C</div>
               <div class="kpi-subtext">Mức dao động nhiệt</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # 3. BĂNG CHUYỀN THỜI TIẾT TỪNG GIỜ (APPLE WEATHER STYLE HOURLY RIBBON)
-        st.markdown("""
+        # 3. BĂNG CHUYỀN THỜI TIẾT TỪNG MỐC (APPLE WEATHER STYLE RIBBON - SẠCH SẼ HOÀN TOÀN)
+        render_html("""
         <div class="section-title">
-          <span>🕒 Dòng Thời Gian Dự Báo Từng Giờ (Hourly Forecast Ribbon)</span>
+          <span>🕒 Dòng Thời Gian Dự Báo Chi Tiết (Forecast Timeline Ribbon)</span>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
-        hourly_html = ['<div class="hourly-container">']
+        hourly_cards = []
         for i in range(min(24, len(pred_df))):
-            t_val = pred_df['predicted_temperature'].iloc[i]
+            t_val = float(pred_df['predicted_temperature'].iloc[i])
             ts = pred_df['timestamp'].iloc[i]
             hour_num = ts.hour
-            time_str = ts.strftime('%H:00')
+            time_str = ts.strftime('%H:%M')
 
             # Icon theo giờ và nhiệt độ
             if 6 <= hour_num <= 17:
-                icon = "☀️" if t_val >= 33 else "🌤️"
+                icon = "☀️" if t_val >= 30 else "🌤️"
             else:
                 icon = "🌙"
 
-            hourly_html.append(f"""
-            <div class="hourly-card">
-              <div class="hourly-time">{time_str}</div>
-              <div class="hourly-icon">{icon}</div>
-              <div class="hourly-temp">{t_val:.1f}°</div>
-            </div>
-            """)
-        hourly_html.append('</div>')
-        st.markdown("".join(hourly_html), unsafe_allow_html=True)
+            card_str = (
+                f'<div class="hourly-card">'
+                f'<div class="hourly-time">{time_str}</div>'
+                f'<div class="hourly-icon">{icon}</div>'
+                f'<div class="hourly-temp">{t_val:.1f}°</div>'
+                f'</div>'
+            )
+            hourly_cards.append(card_str)
+
+        render_html(f'<div class="hourly-container">{"".join(hourly_cards)}</div>')
 
         st.markdown("<br>", unsafe_allow_html=True)
 
         # 4. BIỂU ĐỒ METEOGRAM QUAN SÁT & DỰ BÁO
-        st.markdown(f"""
+        render_html(f"""
         <div class="section-title">
           <span>📈 Chuỗi Thời Gian Quan Trắc Lịch Sử & Dự Báo Tiếp Diễn ({loc_name})</span>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
         fig, ax = plt.subplots(figsize=(14, 5.2), dpi=130)
         fig.patch.set_facecolor('#0f172a')
@@ -835,7 +842,7 @@ else:
         pred_x = all_x[len(hist_temps):]
 
         # Vẽ đường lịch sử & tương lai
-        ax.plot(hist_x, hist_temps, color='#64748b', linewidth=2.0, label='Quan trắc gần đây (96h)')
+        ax.plot(hist_x, hist_temps, color='#64748b', linewidth=2.0, label='Quan trắc gần đây (96 bước)')
         ax.plot(pred_x, pred_temps, color='#38bdf8', linewidth=2.8, marker='o', markersize=4, label='Dự báo tiếp diễn')
 
         # Đánh dấu đỉnh trưa và đáy đêm
@@ -856,60 +863,60 @@ else:
         st.markdown("<br>", unsafe_allow_html=True)
 
         # 5. MA TRẬN 4 THAM SỐ NGOẠI SINH DẪN DẮT (ENVIRONMENTAL SENSORS)
-        st.markdown("""
+        render_html("""
         <div class="section-title">
           <span>🌿 Ma Trận Tham Số Khí Tượng Ngoại Sinh Dẫn Dắt</span>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
         # Lấy giá trị trạm mới nhất từ history_df
         last_row = history_df.iloc[-1]
         e1, e2, e3, e4 = st.columns(4)
         with e1:
             rad_val = round(float(last_row.get('solar_radiation', 0)), 1)
-            st.markdown(f"""
+            render_html(f"""
             <div class="kpi-tile">
               <div class="kpi-label">Bức Xạ Mặt Trời</div>
               <div class="kpi-value" style="color:#fbbf24; font-size:1.8rem;">{rad_val} W/m²</div>
               <div class="kpi-subtext">Cường độ nắng & UV</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
         with e2:
             hum_val = round(float(last_row.get('humidity', 0)), 1)
-            st.markdown(f"""
+            render_html(f"""
             <div class="kpi-tile">
               <div class="kpi-label">Độ Ẩm Tương Đối</div>
               <div class="kpi-value" style="color:#38bdf8; font-size:1.8rem;">{hum_val}%</div>
               <div class="kpi-subtext">Độ ẩm không khí trạm</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
         with e3:
             press_val = round(float(last_row.get('surface_pressure', 0)), 1)
-            st.markdown(f"""
+            render_html(f"""
             <div class="kpi-tile">
               <div class="kpi-label">Khí Áp Bề Mặt</div>
               <div class="kpi-value" style="color:#818cf8; font-size:1.8rem;">{press_val} hPa</div>
               <div class="kpi-subtext">Áp suất khí quyển</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
         with e4:
             wind_val = round(float(last_row.get('wind_speed_10m', 0)), 1)
-            st.markdown(f"""
+            render_html(f"""
             <div class="kpi-tile">
               <div class="kpi-label">Tốc Độ Gió</div>
               <div class="kpi-value" style="color:#34d399; font-size:1.8rem;">{wind_val} m/s</div>
               <div class="kpi-subtext">Tốc độ gió tầng 10m</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
 
         st.markdown("<br>", unsafe_allow_html=True)
 
         # 6. BẢNG DỰ BÁO CHI TIẾT & NÚT XUẤT CSV
-        st.markdown("""
+        render_html("""
         <div class="section-title">
-          <span>📋 Bảng Số Liệu Chi Tiết Từng Giờ</span>
+          <span>📋 Bảng Số Liệu Chi Tiết Từng Mốc</span>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
         detail_df = pd.DataFrame({
             "Thời Gian": pred_df['timestamp'].dt.strftime('%H:%M ngày %d/%m/%Y'),
