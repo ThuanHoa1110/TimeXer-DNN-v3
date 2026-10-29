@@ -1,16 +1,3 @@
-"""
-TimeXer-DINOv3 Weather AI Dashboard - Multi-Station Production Model Serving
-Hệ thống Dự báo Khí tượng Đa trạm với Biến Ngoại sinh
-Học phần: Chuyên đề Trí tuệ nhân tạo và Khoa học dữ liệu (Lớp 65TTNT - Đại học Thủy Lợi)
-
-Tính năng nổi bật:
-  - Nạp mô hình PyTorch TimeXer_DINOv3 và Checkpoint (.pth) đã huấn luyện
-  - Hỗ trợ tải lên cùng lúc CẢ 6 TỆP CSV CỦA 6 TRẠM QUAN TRẮC (Multi-File Batch Upload)
-  - Hoặc chọn chạy toàn bộ mạng lưới 6 trạm Hà Nội 1-click từ kho dữ liệu thực tế
-  - Dự báo đồng thời toàn mạng lưới, phân tích hiệu ứng Đảo nhiệt Đô thị (UHI Gap)
-  - Biểu đồ đa đường so sánh trực quan 6 trạm trên cùng 1 đồ thị
-  - Bảng tổng hợp so sánh đa trạm & Tải tệp CSV kết quả dự báo tổng hợp
-"""
 
 import os
 import sys
@@ -106,58 +93,31 @@ engine = get_inference_engine()
 # ==============================================================================
 with st.sidebar:
     st.markdown("### 🌦️ TimeXer-DINOv3 AI")
-    st.caption("Dự báo Khí tượng Đa trạm (Multi-Station Serving) • 65TTNT Thủy Lợi")
-
-    # Hiển thị trạng thái Model Serving
-    checkpoint_exists = os.path.exists(os.path.join(BASE_DIR, "checkpoints", "timexer_dinov3_best.pth"))
-    if TORCH_AVAILABLE:
-        if checkpoint_exists:
-            st.markdown("""
-            <div class="model-badge">
-              🟢 PyTorch Checkpoint Đã Nạp (.pth)
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown("""
-            <div class="model-badge" style="background:#fffbeb; color:#b45309; border-color:#fde68a;">
-              🟡 PyTorch Model Khởi Tạo Sẵn Sàng
-            </div>
-            """, unsafe_allow_html=True)
-    else:
-        st.error("⚠️ Chưa nạp được PyTorch")
-
     st.markdown("---")
-
-    st.markdown("#### ⚙️ Cấu hình Suy luận (Inference Parameters)")
     
     # 1. Chọn Horizon
     horizon = st.radio(
-        "1. Khoảng thời gian dự báo tương lai (Horizon):",
+        "Khoảng thời gian dự báo tương lai (Horizon):",
         options=[24, 48, 72],
         format_func=lambda x: f"{x} bước ({x*5//60} giờ)",
         index=0
     )
 
     # 2. Biến ngoại sinh
-    st.markdown("2. **Tích hợp Biến ngoại sinh (Exogenous Drivers):**")
     use_exo = st.toggle("Bật Cross-Attention Ngoại sinh (Nắng, Gió, Ẩm, Áp)", value=True)
 
     # 3. Lựa chọn Mô hình
     model_opt = st.selectbox(
-        "3. Mô hình phục vụ:",
+        "Mô hình phục vụ:",
         options=["TimeXer-DINOv3 (Proposed Architecture)", "TimeXer Base (NeurIPS 2024)", "Univariate Baseline (No Exogenous)"],
         index=0
     )
-
-    st.markdown("---")
-    st.caption("📌 Thiết bị thực thi: **CPU / CUDA Tensor Acceleration**")
 
 
 # ==============================================================================
 # 4. GIAO DIỆN CHÍNH: NẠP DỮ LIỆU ĐẦU VÀO ĐA TRẠM THỰC TẾ
 # ==============================================================================
 st.title("🌦️ Bảng Điều Khiển Dự Báo Khí Tượng Đa Trạm (TimeXer-DINOv3)")
-st.caption("Hỗ trợ tải lên cùng lúc cả 6 trạm mạng lưới hoặc dự báo đồng bộ toàn mạng vi khí hậu Hà Nội")
 
 # Định nghĩa các trạm mẫu và màu sắc biểu đồ
 STATION_INFO = {
@@ -237,13 +197,12 @@ with input_tab1:
 
 with input_tab2:
     uploaded_files = st.file_uploader(
-        "Kéo thả 1 hoặc NHIỀU tệp CSV (Hỗ trợ tải lên cùng lúc CẢ 6 TRẠM):",
+        "Kéo thả tệp CSV:",
         type=["csv"],
-        accept_multiple_files=True,
-        help="Giữ Ctrl hoặc Shift để chọn cùng lúc nhiều file CSV (ví dụ: st01_hoankiem.csv, ..., st06_socson.csv)"
+        accept_multiple_files=True
     )
     if uploaded_files:
-        st.success(f"📂 Đã nạp thành công **{len(uploaded_files)} tệp CSV** từ máy tính của bạn!")
+        st.success(f"Đã nạp {len(uploaded_files)} tệp CSV.")
         stations_dict = {}
         ground_truth_dict = {}
         for f in uploaded_files:
@@ -339,7 +298,6 @@ if run_btn:
                     """, unsafe_allow_html=True)
 
                 st.markdown("### 🌐 Biểu Đồ So Sánh Dự Báo Mạng Lưới 6 Trạm Khí Tượng Hà Nội")
-                st.caption("Trực quan hóa sự phân hóa không gian (Spatial Heterogeneity) và hiệu ứng Đảo nhiệt Đô thị (UHI)")
 
                 # Vẽ biểu đồ đa trạm
                 fig, ax = plt.subplots(figsize=(14, 5.8), dpi=130)
@@ -390,7 +348,6 @@ if run_btn:
 
                 with col_tab2:
                     st.markdown("#### 📥 Xuất Báo Cáo Dự Báo Tổng Hợp 6 Trạm")
-                    st.caption("Tải file CSV gồm toàn bộ các mốc thời gian và nhiệt độ dự báo của cả 6 trạm:")
                     
                     # Ghép DataFrame tổng hợp
                     first_st = list(results.keys())[0]
