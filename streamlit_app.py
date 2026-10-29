@@ -458,6 +458,17 @@ else:
         
         coldest_st_key = min(forecast_results.keys(), key=lambda k: forecast_results[k]['metrics']['predicted_min'])
         coldest_st_name = STATIONS_METADATA.get(coldest_st_key, {}).get("district", coldest_st_key)
+        first_res = list(forecast_results.values())[0]
+        obs_start = first_res['lookback_history']['timestamp'].iloc[0].strftime('%H:%M ngày %d/%m/%Y')
+        obs_end = first_res['lookback_history']['timestamp'].iloc[-1].strftime('%H:%M ngày %d/%m/%Y')
+        source_label = f"Tệp CSV tải lên từ người dùng ({len(uploaded_files)} trạm)" if uploaded_files else "Cơ sở dữ liệu trạm quan trắc tự động (Hà Nội)"
+
+        render_html(f"""
+        <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 16px; margin-bottom: 16px; font-size: 0.84rem; color: #94a3b8; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px;">
+          <div>📡 <b>Nguồn dữ liệu:</b> <span style="color:#38bdf8; font-weight:600;">{source_label}</span></div>
+          <div>⏱️ <b>Khoảng quan trắc đầu vào (96 bước lịch sử):</b> <span style="color:#fbbf24; font-weight:600;">{obs_start} ➔ {obs_end}</span></div>
+        </div>
+        """)
 
         # 1. HỘP KHUYẾN NGHỊ VẬN HÀNH (TOMORROW.IO OPERATIONAL ADVISORY)
         render_html(f"""
@@ -737,10 +748,21 @@ else:
 
         # 1. HỘP KHUYẾN NGHỊ VẬN HÀNH CHO TRẠM
         peak_idx = int(np.argmax(pred_df['predicted_temperature'].values))
-        peak_time = pred_df['timestamp'].iloc[peak_idx].strftime('%H:%M ngày %d/%m')
+        peak_time = pred_df['timestamp'].iloc[peak_idx].strftime('%H:%M ngày %d/%m/%Y')
         
         low_idx = int(np.argmin(pred_df['predicted_temperature'].values))
-        low_time = pred_df['timestamp'].iloc[low_idx].strftime('%H:%M ngày %d/%m')
+        low_time = pred_df['timestamp'].iloc[low_idx].strftime('%H:%M ngày %d/%m/%Y')
+
+        obs_start = history_df['timestamp'].iloc[0].strftime('%H:%M ngày %d/%m/%Y')
+        obs_end = history_df['timestamp'].iloc[-1].strftime('%H:%M ngày %d/%m/%Y')
+        source_label = "Tệp CSV tải lên từ người dùng" if uploaded_files else "Cơ sở dữ liệu trạm quan trắc tự động"
+
+        render_html(f"""
+        <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 16px; margin-bottom: 16px; font-size: 0.84rem; color: #94a3b8; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px;">
+          <div>📡 <b>Nguồn dữ liệu:</b> <span style="color:#38bdf8; font-weight:600;">{source_label}</span></div>
+          <div>⏱️ <b>Khoảng quan trắc đầu vào (96 bước lịch sử):</b> <span style="color:#fbbf24; font-weight:600;">{obs_start} ➔ {obs_end}</span></div>
+        </div>
+        """)
 
         render_html(f"""
         <div class="advisory-card">
@@ -760,7 +782,7 @@ else:
             <div class="kpi-tile">
               <div class="kpi-label">Nhiệt độ hiện tại</div>
               <div class="kpi-value">{m['current_temp']}°C</div>
-              <div class="kpi-subtext">Quan trắc tức thời</div>
+              <div class="kpi-subtext">Đo lúc {obs_end}</div>
             </div>
             """)
         with c2:
