@@ -350,9 +350,9 @@ with st.sidebar:
     )
 
     horizon_choice = st.radio(
-        "Khung thời gian dự báo:",
+        "Tầm nhìn dự báo thời tiết:",
         options=[24, 48, 72],
-        format_func=lambda x: f"{x} mốc tiếp theo ({x * 5 // 60}h {x * 5 % 60}p)",
+        format_func=lambda x: f"{x * 5 // 60} giờ tới ({x * 5} phút tiếp theo)",
         index=0
     )
 
@@ -365,6 +365,9 @@ with st.sidebar:
             type=["csv"],
             accept_multiple_files=True
         )
+
+    if uploaded_files:
+        st.success(f"Đang phân tích {len(uploaded_files)} tệp CSV từ máy tính.")
 
     st.markdown("---")
     render_html("""
@@ -387,8 +390,15 @@ if uploaded_files:
     for f in uploaded_files:
         try:
             df_up = pd.read_csv(f)
-            st_key = f.name.replace(".csv", "")
-            stations_data[st_key] = df_up
+            raw_name = f.name.replace(".csv", "").strip().lower()
+            # Khớp tên trạm chuẩn nếu có
+            matched_key = None
+            for meta_k in STATIONS_METADATA.keys():
+                if meta_k in raw_name or raw_name in meta_k:
+                    matched_key = meta_k
+                    break
+            final_key = matched_key if matched_key else raw_name
+            stations_data[final_key] = df_up
         except Exception:
             pass
 
@@ -466,7 +476,7 @@ else:
         render_html(f"""
         <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 16px; margin-bottom: 16px; font-size: 0.84rem; color: #94a3b8; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px;">
           <div>📡 <b>Nguồn dữ liệu:</b> <span style="color:#38bdf8; font-weight:600;">{source_label}</span></div>
-          <div>⏱️ <b>Khoảng quan trắc đầu vào (96 bước lịch sử):</b> <span style="color:#fbbf24; font-weight:600;">{obs_start} ➔ {obs_end}</span></div>
+          <div>⏱️ <b>Thời điểm quan trắc cập nhật:</b> <span style="color:#fbbf24; font-weight:600;">{obs_end}</span></div>
         </div>
         """)
 
@@ -760,7 +770,7 @@ else:
         render_html(f"""
         <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 16px; margin-bottom: 16px; font-size: 0.84rem; color: #94a3b8; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px;">
           <div>📡 <b>Nguồn dữ liệu:</b> <span style="color:#38bdf8; font-weight:600;">{source_label}</span></div>
-          <div>⏱️ <b>Khoảng quan trắc đầu vào (96 bước lịch sử):</b> <span style="color:#fbbf24; font-weight:600;">{obs_start} ➔ {obs_end}</span></div>
+          <div>⏱️ <b>Thời điểm quan trắc cập nhật:</b> <span style="color:#fbbf24; font-weight:600;">{obs_end}</span></div>
         </div>
         """)
 
@@ -864,14 +874,14 @@ else:
         pred_x = all_x[len(hist_temps):]
 
         # Vẽ đường lịch sử & tương lai
-        ax.plot(hist_x, hist_temps, color='#64748b', linewidth=2.0, label='Quan trắc gần đây (96 bước)')
+        ax.plot(hist_x, hist_temps, color='#64748b', linewidth=2.0, label='Dữ liệu đo thực tế gần đây')
         ax.plot(pred_x, pred_temps, color='#38bdf8', linewidth=2.8, marker='o', markersize=4, label='Dự báo tiếp diễn')
 
         # Đánh dấu đỉnh trưa và đáy đêm
         ax.scatter([pred_x[peak_idx]], [pred_temps[peak_idx]], color='#ef4444', s=120, zorder=5, label=f'Đỉnh nhiệt ({pred_temps[peak_idx]:.1f}°C)')
         ax.scatter([pred_x[low_idx]], [pred_temps[low_idx]], color='#06b6d4', s=120, zorder=5, label=f'Đáy nhiệt ({pred_temps[low_idx]:.1f}°C)')
 
-        ax.axvline(x=len(hist_temps) - 1, color='#f97316', linestyle='--', linewidth=1.8, label='Mốc hiện tại')
+        ax.axvline(x=len(hist_temps) - 1, color='#f97316', linestyle='--', linewidth=1.8, label='Thời điểm hiện tại')
         ax.tick_params(colors='#94a3b8')
         ax.set_ylabel("Nhiệt độ (°C)", fontsize=10, labelpad=8, color='#94a3b8')
         ax.grid(True, linestyle='--', alpha=0.15, color='#94a3b8')
@@ -884,10 +894,10 @@ else:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # 5. MA TRẬN 4 THAM SỐ NGOẠI SINH DẪN DẮT (ENVIRONMENTAL SENSORS)
+        # 5. MA TRẬN 4 THAM SỐ MÔI TRƯỜNG DẪN DẮT (ENVIRONMENTAL SENSORS)
         render_html("""
         <div class="section-title">
-          <span>🌿 Ma Trận Tham Số Khí Tượng Ngoại Sinh Dẫn Dắt</span>
+          <span>🌿 Các Chỉ Số Môi Trường & Cảm Biến Khí Tượng</span>
         </div>
         """)
 
