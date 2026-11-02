@@ -1,5 +1,11 @@
 # TimeXer-DINOv3: Empowering Transformers for Time Series Forecasting with Exogenous Variables and DINO-v3
 
+[![AI MLOps CI/CD Pipeline & Docker Hub Delivery](https://github.com/ThuanHoa1110/TimeXer-DNN-v3/actions/workflows/ai_ci_cd.yml/badge.svg)](https://github.com/ThuanHoa1110/TimeXer-DNN-v3/actions/workflows/ai_ci_cd.yml)
+[![Docker Image](https://img.shields.io/badge/docker%20image-thuanhoa1110%2Ftimexer--dinov3--ai-blue?logo=docker)](https://hub.docker.com/r/thuanhoa1110/timexer-dinov3-ai)
+[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
+[![Tests](https://img.shields.io/badge/tests-5%20passed%20(100%25)-brightgreen.svg)](https://github.com/ThuanHoa1110/TimeXer-DNN-v3/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 This repository provides the official implementation of **TimeXer-DINOv3**, extending the NeurIPS 2024 paper *[TimeXer: Empowering Transformers for Time Series Forecasting with Exogenous Variables](https://arxiv.org/abs/2402.19072)* by integrating a **DINO-v3 Backbone** and a **DINO-v3 Multi-Objective Composite Loss Function**.
 
 ---
