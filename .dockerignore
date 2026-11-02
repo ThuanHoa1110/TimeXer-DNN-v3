@@ -33,4 +33,4 @@ Thumbs.db
 
 # Documentation Reports (Không cần thiết trong runtime image)
 BAO_CAO_*.md
-*.txt
+KAGGLE_DESCRIPTION.txt
