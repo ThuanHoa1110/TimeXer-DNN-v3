@@ -12,6 +12,7 @@ from datetime import datetime
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import urllib.parse
 import pandas as pd
+import numpy as np
 
 # Cấu hình UTF-8 cho Windows console
 if hasattr(sys.stdout, 'reconfigure'):
