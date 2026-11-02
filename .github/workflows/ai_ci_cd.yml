@@ -43,8 +43,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 pytest
           # Cài đặt PyTorch CPU tối ưu cho môi trường CI Runner
-          pip install torch --index-url https://download.pytorch.org/whl/cpu
-          pip install -r requirements.txt
+          pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
       - name: 4. Kiểm tra Cú pháp & Code Quality (Linting)
         run: |
@@ -83,20 +82,13 @@ jobs:
       - name: 1. Checkout Mã Nguồn
         uses: actions/checkout@v4
 
-      - name: 2. Thiết lập Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: 2. Build Docker Image cho Model AI
+        run: |
+          echo "🚀 Đang build Docker Image cho Model AI TimeXer-DINOv3..."
+          docker build -t thuanhoa1110/timexer-dinov3-ai:latest .
+          echo "✅ Build Docker Image thành công!"
 
-      - name: 3. Build Docker Image cho Model AI
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          push: false
-          tags: thuanhoa1110/timexer-dinov3-ai:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: 4. Khởi Chạy Thử Nghiệm Container & Kiểm Tra REST API
+      - name: 3. Khởi Chạy Thử Nghiệm Container & Kiểm Tra REST API
         run: |
           echo "🚀 Khởi chạy Container để kiểm tra sức khỏe Model Serving..."
           docker run -d -p 8080:8080 --name test_serving thuanhoa1110/timexer-dinov3-ai:latest
@@ -108,7 +100,7 @@ jobs:
           echo "✅ Container hoạt động và suy luận hoàn hảo!"
           docker stop test_serving
 
-      - name: 5. Đăng nhập và Push lên Docker Hub
+      - name: 4. Đăng nhập và Push lên Docker Hub
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

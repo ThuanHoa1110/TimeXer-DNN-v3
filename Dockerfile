@@ -4,15 +4,13 @@
 # Sinh viên thực hiện: Nguyễn Thuận Hóa
 # ==============================================================================
 
-# 1. Base Image: Python 3.10 Slim tối ưu dung lượng (chỉ ~150MB so với ~1GB của image đầy đủ)
+# 1. Base Image: Python 3.10 Slim tối ưu dung lượng
 FROM python:3.10-slim
 
-# Thiết lập thông tin nhãn metadata
 LABEL maintainer="Nguyen Thuan Hoa <thuanhoa1110@gmail.com>"
 LABEL description="TimeXer-DINOv3 Deep Learning Weather Forecasting Production Serving"
 LABEL version="1.0.0"
 
-# Thiết lập biến môi trường runtime
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PORT=8080 \
@@ -24,24 +22,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Thiết lập thư mục làm việc trong container
 WORKDIR /app
 
-# 3. Tận dụng Docker Layer Caching: Cài đặt Dependencies trước
+# 3. Cài đặt PyTorch CPU wheel và các gói phụ thuộc từ requirements.txt
 COPY requirements.txt /app/requirements.txt
-
-# Cài đặt PyTorch CPU-optimized wheel trước (tiết kiệm ~2GB so với bản CUDA đầy đủ khi chạy CPU serving)
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
-
-# Cài đặt các thư viện AI & Web còn lại
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
 # 4. Sao chép toàn bộ mã nguồn mô hình, checkpoint trọng số và dữ liệu trạm
 COPY . /app
 
 # 5. Khai báo cổng lắng nghe
-# Port 8080: Web API REST Server (app.py)
-# Port 8501: Streamlit Interactive Dashboard (streamlit_app.py)
 EXPOSE 8080 8501
 
 # 6. Container Healthcheck giám sát trạng thái sống của Model Serving
