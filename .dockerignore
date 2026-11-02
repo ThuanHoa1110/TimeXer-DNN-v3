@@ -1,0 +1,36 @@
+# Git & Environments
+.git
+.gitignore
+.github
+.venv
+venv/
+ENV/
+env/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Large Training Data (Giữ lại data/stations_sample phục vụ Inference)
+data/private/
+data/public/
+private_dataset.csv
+
+# Jupyter Notebooks & Heavy Figures
+*.ipynb
+figures/
+scratch/
+docs/
+
+# IDE & OS Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Documentation Reports (Không cần thiết trong runtime image)
+BAO_CAO_*.md
+*.txt

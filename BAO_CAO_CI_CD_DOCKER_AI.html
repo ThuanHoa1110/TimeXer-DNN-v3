@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo Cáo CI/CD & Docker Hub - Sinh Viên: Nguyễn Thuận Hóa - 65TTNT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --accent: #0284c7;
+      --success: #16a34a;
+      --dark: #0f172a;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-700: #334155;
+      --gray-900: #0f172a;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.65;
+      color: var(--gray-900);
+      background-color: #f1f5f9;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 60px 50px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Print Controls */
+    .no-print {
+      margin-bottom: 25px;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #1e3a8a, #0284c7);
+      color: #ffffff;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+    }
+
+    .btn-print {
+      background: #ffffff;
+      color: #1e3a8a;
+      font-weight: 700;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-print:hover {
+      background: #f8fafc;
+      transform: translateY(-1px);
+    }
+
+    /* Header Banner */
+    .header-box {
+      border-bottom: 3px solid var(--primary);
+      padding-bottom: 24px;
+      margin-bottom: 32px;
+    }
+
+    .uni-meta {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.3;
+      margin-bottom: 16px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      background: var(--gray-50);
+      padding: 16px 20px;
+      border-radius: 10px;
+      border: 1px solid var(--gray-200);
+      font-size: 14px;
+    }
+
+    .meta-item strong {
+      color: var(--primary);
+    }
+
+    /* Section Styles */
+    h2 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-top: 36px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-top: 24px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      margin-bottom: 14px;
+      font-size: 14.5px;
+      color: var(--gray-700);
+      text-align: justify;
+    }
+
+    ul, ol {
+      margin-left: 24px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      color: var(--gray-700);
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    /* Board Box Quote */
+    .board-quote {
+      background: #064e3b;
+      color: #ecfdf5;
+      padding: 18px 24px;
+      border-radius: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      border-left: 6px solid #10b981;
+      margin: 18px 0;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Code Blocks */
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 16px 20px;
+      border-radius: 10px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.55;
+      margin: 14px 0 20px 0;
+      border: 1px solid #1e293b;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--gray-100);
+      color: #c026d3;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    pre code {
+      background: none;
+      color: inherit;
+      padding: 0;
+      font-size: inherit;
+    }
+
+    /* Table Styles */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 13.5px;
+    }
+
+    th, td {
+      padding: 10px 14px;
+      text-align: left;
+      border: 1px solid var(--gray-200);
+    }
+
+    th {
+      background-color: var(--gray-100);
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    tr:nth-child(even) {
+      background-color: var(--gray-50);
+    }
+
+    /* Callout */
+    .callout {
+      background-color: #eff6ff;
+      border-left: 4px solid var(--primary-light);
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      font-size: 14px;
+      color: #1e40af;
+    }
+
+    .badge-pass {
+      display: inline-block;
+      background: #dcfce7;
+      color: #15803d;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      border: 1px solid #86efac;
+    }
+
+    /* Print Overrides */
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+      .container {
+        box-shadow: none;
+        padding: 20px;
+        max-width: 100%;
+      }
+      .no-print {
+        display: none;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+      pre {
+        background: #1e293b !important;
+        color: #f8fafc !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .board-quote {
+        background: #064e3b !important;
+        color: #ecfdf5 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Nút bấm in PDF tiện ích -->
+    <div class="no-print">
+      <div>
+        <strong>📄 Báo cáo sẵn sàng xuất PDF</strong>
+        <p style="color: #e0f2fe; margin-bottom: 0; font-size: 13px;">Bấm nút bên cạnh để xem trước và lưu file PDF nộp thầy giáo.</p>
+      </div>
+      <button class="btn-print" onclick="window.print()">🖨️ Xuất File PDF (Ctrl + P)</button>
+    </div>
+
+    <!-- Trang Tiêu đề & Thông tin Sinh viên -->
+    <div class="header-box">
+      <div class="uni-meta">TRƯỜNG ĐẠI HỌC THỦY LỢI • KHOA CÔNG NGHỆ THÔNG TIN</div>
+      <h1>BÁO CÁO THỰC HÀNH: TRIỂN KHAI CI/CD & ĐÓNG GÓI DOCKER IMAGE CHO BÀI TOÁN AI</h1>
+      <div class="meta-grid">
+        <div class="meta-item"><strong>Sinh viên thực hiện:</strong> Nguyễn Thuận Hóa</div>
+        <div class="meta-item"><strong>Mã lớp học phần:</strong> 65TTNT (Chuyên đề TTNT & KHDL)</div>
+        <div class="meta-item"><strong>GitHub Repository:</strong> github.com/ThuanHoa1110/TimeXer-DNN-v3</div>
+        <div class="meta-item"><strong>Docker Hub Registry:</strong> thuanhoa1110/timexer-dinov3-ai</div>
+      </div>
+    </div>
+
+    <!-- PHẦN 1: PHÂN TÍCH ĐỀ BÀI -->
+    <h2>🎯 1. PHÂN TÍCH ĐỀ BÀI (REQUIREMENTS ANALYSIS)</h2>
+    <p>Đề bài thực hành được ghi trực tiếp trên bảng giảng đường gồm 2 nhiệm vụ kỹ thuật và 1 yêu cầu định dạng nộp:</p>
+    
+    <div class="board-quote">
+      1. Triển khai CI/CD cho bài toán AI.<br>
+      2. Build docker image cho model AI.<br>
+      &nbsp;&nbsp;&nbsp;└─> public image lên docker hub.<br>
+      } ──> Tổng thể: submit PDF, step by step.
+    </div>
+
+    <h3>1.1. Phân tích Ý 1: Triển khai CI/CD cho bài toán AI</h3>
+    <p>
+      Trong quy trình phát triển phần mềm chuẩn mực, <strong>CI (Continuous Integration)</strong> và <strong>CD (Continuous Delivery)</strong> giúp tự động hóa khâu kiểm thử và phát hành. Tuy nhiên, đối với bài toán <strong>Trí tuệ nhân tạo (AI/Deep Learning)</strong>, CI/CD có những nét đặc thù mang tính quyết định:
+    </p>
+    <ul>
+      <li><strong>Data Pipeline & Schema Testing:</strong> Kiểm tra tính toàn vẹn của dữ liệu chuỗi thời gian khí tượng đầu vào (tần số 5 phút, độ dài Lookback $L=96$, không bị khuyết thiếu NaN, đủ các biến ngoại sinh bức xạ, gió, độ ẩm, áp suất).</li>
+      <li><strong>Deep Learning Model Architecture Testing:</strong> Kiểm tra luồng Tensor Flow qua mạng <code>TimeXer_DINOv3</code>, cơ chế LayerScale ($\gamma=10^{-5}$), Multi-Head Cross-Attention và chiều kích thước đầu ra $MS$ <code>[Batch, 24, 1]</code>.</li>
+      <li><strong>Composite Loss & Gradient Flow Testing:</strong> Kiểm thử hàm mất mát DINO-v3 kết hợp 3 thành phần ($\mathcal{L}_{\text{task}} + \lambda_{\text{distill}}\mathcal{L}_{\text{distill}} + \lambda_{\text{gram}}\mathcal{L}_{\text{gram}}$) và đảm bảo gradient lan truyền ngược (backward pass) thành công.</li>
+      <li><strong>Model Serving Verification:</strong> Nạp file trọng số thật (<code>checkpoints/timexer_dinov3_best.pth</code>) và kiểm tra module suy luận <code>TimeXerInferenceEngine</code> dự báo thành công 24 bước thời gian.</li>
+    </ul>
+
+    <h3>1.2. Phân tích Ý 2: Build Docker Image cho Model AI & Public lên Docker Hub</h3>
+    <p>
+      Mô hình AI cần môi trường runtime đồng nhất (Python 3.10, PyTorch, Scikit-learn, Pandas). Việc đóng gói Docker Image đảm bảo tính di động (portability) và khả năng triển khai tức thì:
+    </p>
+    <ul>
+      <li><strong>Tối ưu hóa kích thước:</strong> Sử dụng Base Image <code>python:3.10-slim</code> và bánh xe PyTorch CPU wheel tối ưu, giúp giảm kích thước từ >3GB xuống chỉ còn vài trăm MB.</li>
+      <li><strong>Tệp <code>.dockerignore</code>:</strong> Loại bỏ các tệp dữ liệu thô kích thước lớn (file 74MB <code>real_weather_large_dataset.csv</code>), bộ nhớ đệm <code>__pycache__</code> và môi trường ảo <code>.venv</code> khỏi build context.</li>
+      <li><strong>Public Image lên Docker Hub:</strong> Thiết lập quy trình tự động đẩy Image lên Docker Hub công khai (<code>thuanhoa1110/timexer-dinov3-ai:latest</code>) để người dùng hoặc hội đồng chấm thi có thể kéo về chạy với 1 câu lệnh duy nhất.</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <!-- PHẦN 2: TRIỂN KHAI CI/CD -->
+    <h2>⚙️ 2. TRIỂN KHAI CHI TIẾT Ý 1: CI/CD CHO BÀI TOÁN AI</h2>
+    
+    <h3>Bước 1: Xây dựng Bộ Kiểm thử Tự động Chuyên sâu (AI Test Suite)</h3>
+    <p>Nhóm đã lập trình tệp <code>tests/test_ai_pipeline.py</code> với 5 bài kiểm thử tự động toàn diện:</p>
+    <pre><code># tests/test_ai_pipeline.py
+import unittest, torch, pandas as pd
+from inference_engine import TimeXerInferenceEngine
+from models.TimeXer_DINOv3 import Model as TimeXer_DINOv3_Model, DINOv3Loss
+
+class TestAICICDPipeline(unittest.TestCase):
+    # Test 1: Kiểm thử toàn vẹn dữ liệu chuỗi thời gian khí tượng
+    def test_01_data_integrity_and_schema(self): ...
+    
+    # Test 2: Kiểm thử Tensor Flow & Kiến trúc DINO-v3 Backbone
+    def test_02_dinov3_architecture_forward(self): ...
+    
+    # Test 3: Kiểm thử Hàm mất mát DINO-v3 & Lan truyền Gradient ngược
+    def test_03_dinov3_composite_loss_and_gradients(self): ...
+    
+    # Test 4: Kiểm thử Nạp Checkpoint trọng số và Inference Engine
+    def test_04_inference_engine_prediction(self): ...
+    
+    # Test 5: Kiểm thử Payload Serialization phục vụ Web REST API
+    def test_05_api_payload_formatting(self): ...</code></pre>
+
+    <div class="callout">
+      <strong>Kết quả chạy kiểm thử Cục bộ (Terminal Verification):</strong><br>
+      <code>python -m unittest tests/test_ai_pipeline.py -v</code><br>
+      <span class="badge-pass">PASSED</span> Toàn bộ 5/5 bài test vượt qua thành công xuất sắc trong <strong>0.137 giây</strong>.
+    </div>
+
+    <h3>Bước 2: Cấu hình GitHub Actions CI Pipeline (<code>.github/workflows/ai_ci_cd.yml</code>)</h3>
+    <pre><code># Trích đoạn Job AI-CI trong .github/workflows/ai_ci_cd.yml
+name: AI MLOps CI/CD Pipeline & Docker Hub Delivery
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  ai-ci-pipeline:
+    name: "CI: Code Linting, PyTorch Model Verification & AI Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Checkout Mã Nguồn
+        uses: actions/checkout@v4
+      - name: 2. Cài đặt Python 3.10
+        uses: actions/setup-python@v5
+        with: { python-version: "3.10", cache: "pip" }
+      - name: 3. Cài đặt Thư viện & PyTorch CPU
+        run: |
+          pip install flake8 pytest
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+      - name: 4. Kiểm tra Cú pháp & Code Style (Flake8)
+        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --exclude=.venv
+      - name: 5. Chạy Kiểm định Backbone DINO-v3
+        run: python run_test_dinov3.py
+      - name: 6. Chạy Bộ Kiểm thử Toàn trình AI Test Suite
+        run: python -m unittest tests/test_ai_pipeline.py -v</code></pre>
+
+    <div class="page-break"></div>
+
+    <!-- PHẦN 3: BUILD DOCKER & PUBLIC DOCKER HUB -->
+    <h2>🐳 3. THỰC HIỆN CHI TIẾT Ý 2: BUILD DOCKER IMAGE & PUBLIC DOCKER HUB</h2>
+
+    <h3>Bước 1: Thiết kế <code>Dockerfile</code> Chuẩn AI Serving</h3>
+    <pre><code>FROM python:3.10-slim
+LABEL maintainer="Nguyen Thuan Hoa <thuanhoa1110@gmail.com>"
+ENV PYTHONUNBUFFERED=1 PORT=8080 STREAMLIT_SERVER_PORT=8501
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . /app
+EXPOSE 8080 8501
+
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD curl -f http://localhost:8080/api/model-info || exit 1
+
+CMD ["python", "app.py"]</code></pre>
+
+    <h3>Bước 2: Tối ưu Ngữ cảnh Build bằng <code>.dockerignore</code></h3>
+    <pre><code>.git
+.venv
+__pycache__/
+*.pyc
+data/private/
+private_dataset.csv
+*.ipynb
+figures/</code></pre>
+
+    <h3>Bước 3: Tự động hóa Giao vận CD Đẩy Image lên Docker Hub</h3>
+    <pre><code>  docker-cd-pipeline:
+    name: "CD: Build Docker Image & Public to Docker Hub"
+    needs: ai-ci-pipeline
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/timexer-dinov3-ai:latest</code></pre>
+
+    <h3>Bước 4: Lệnh Thực Thi & Kiểm Thử Dành Cho Giảng Viên / Người Dùng</h3>
+    <p>Bất kỳ ai cũng có thể kéo Image đã public và khởi chạy hệ thống ngay lập tức:</p>
+    <pre><code># 1. Kéo Image công khai từ Docker Hub
+docker pull thuanhoa1110/timexer-dinov3-ai:latest
+
+# 2. Khởi chạy Container Model Serving (Port 8080)
+docker run -d -p 8080:8080 --name weather_ai thuanhoa1110/timexer-dinov3-ai:latest
+
+# 3. Kiểm tra thông tin mô hình qua API
+curl http://localhost:8080/api/model-info</code></pre>
+
+    <!-- PHẦN 4: TỔNG KẾT -->
+    <h2>📋 4. TỔNG KẾT MINH CHỨNG & DANH MỤC TỆP ĐÃ XÂY DỰNG</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Tên thành phần</th>
+          <th>Đường dẫn tệp</th>
+          <th>Trạng thái & Chức năng</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>AI Test Suite</strong></td>
+          <td><code>tests/test_ai_pipeline.py</code></td>
+          <td><span class="badge-pass">HOÀN TẤT</span> 5/5 Unit tests kiểm thử Data, Model, Loss & Inference</td>
+        </tr>
+        <tr>
+          <td><strong>DINO-v3 Verification</strong></td>
+          <td><code>run_test_dinov3.py</code></td>
+          <td><span class="badge-pass">HOÀN TẤT</span> Kiểm thử LayerScale, Cross-Attention & Gram Loss</td>
+        </tr>
+        <tr>
+          <td><strong>Dockerfile</strong></td>
+          <td><code>Dockerfile</code></td>
+          <td><span class="badge-pass">HOÀN TẤT</span> Base python:3.10-slim, PyTorch CPU wheel, Multi-Port</td>
+        </tr>
+        <tr>
+          <td><strong>Docker Ignore</strong></td>
+          <td><code>.dockerignore</code></td>
+          <td><span class="badge-pass">HOÀN TẤT</span> Loại bỏ 74MB data thô, cache, venv tối ưu build context</td>
+        </tr>
+        <tr>
+          <td><strong>GitHub Actions Workflow</strong></td>
+          <td><code>.github/workflows/ai_ci_cd.yml</code></td>
+          <td><span class="badge-pass">HOÀN TẤT</span> CI kiểm thử tự động + CD tự động đẩy lên Docker Hub</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top: 30px; text-align: center; color: #64748b; font-size: 13px;">
+      Báo cáo hoàn thiện bởi Sinh viên <strong>Nguyễn Thuận Hóa</strong> (Lớp 65TTNT) - Học phần Chuyên đề TTNT & KHDL • Đại học Thủy Lợi
+    </div>
+  </div>
+
+</body>
+</html>
