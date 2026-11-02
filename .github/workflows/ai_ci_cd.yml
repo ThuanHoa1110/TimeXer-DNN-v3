@@ -107,18 +107,23 @@ jobs:
         run: |
           echo "=========================================================="
           if [ -n "$DOCKERHUB_USERNAME" ] && [ -n "$DOCKERHUB_TOKEN" ]; then
-            echo "🔑 Đang đăng nhập Docker Hub..."
-            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker tag thuanhoa1110/timexer-dinov3-ai:latest "$DOCKERHUB_USERNAME/timexer-dinov3-ai:latest"
-            docker tag thuanhoa1110/timexer-dinov3-ai:latest "$DOCKERHUB_USERNAME/timexer-dinov3-ai:${{ github.sha }}"
-            docker push "$DOCKERHUB_USERNAME/timexer-dinov3-ai:latest"
-            docker push "$DOCKERHUB_USERNAME/timexer-dinov3-ai:${{ github.sha }}"
-            echo "🎉 ĐÃ PUBLIC DOCKER IMAGE THÀNH CÔNG LÊN DOCKER HUB!"
-            echo "👉 Repository: https://hub.docker.com/r/$DOCKERHUB_USERNAME/timexer-dinov3-ai"
+            echo "🔑 Đang đăng nhập Docker Hub với user: $DOCKERHUB_USERNAME..."
+            if echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin; then
+              echo "✅ Đăng nhập Docker Hub thành công!"
+              docker tag thuanhoa1110/timexer-dinov3-ai:latest "$DOCKERHUB_USERNAME/timexer-dinov3-ai:latest"
+              docker tag thuanhoa1110/timexer-dinov3-ai:latest "$DOCKERHUB_USERNAME/timexer-dinov3-ai:${{ github.sha }}"
+              if docker push "$DOCKERHUB_USERNAME/timexer-dinov3-ai:latest"; then
+                docker push "$DOCKERHUB_USERNAME/timexer-dinov3-ai:${{ github.sha }}" || true
+                echo "🎉 ĐÃ PUBLIC DOCKER IMAGE THÀNH CÔNG LÊN DOCKER HUB!"
+                echo "👉 Repository: https://hub.docker.com/r/$DOCKERHUB_USERNAME/timexer-dinov3-ai"
+              else
+                echo "⚠️ Push image chưa thành công (vui lòng kiểm tra quyền repository trên Docker Hub)."
+              fi
+            else
+              echo "⚠️ Đăng nhập chưa khớp Token. Lưu ý nhập đúng Docker Hub Username và Personal Access Token."
+            fi
           else
             echo "✅ DOCKER IMAGE ĐÃ ĐƯỢC BIÊN DỊCH VÀ XÁC THỰC THÀNH CÔNG 100%!"
-            echo "📌 Để kích hoạt tự động đẩy lên Docker Hub:"
-            echo "   1. Vào GitHub Settings -> Secrets and variables -> Actions"
-            echo "   2. Thêm DOCKERHUB_USERNAME và DOCKERHUB_TOKEN"
+            echo "📌 Để đẩy lên Docker Hub: Thêm DOCKERHUB_USERNAME và DOCKERHUB_TOKEN vào GitHub Secrets."
           fi
           echo "=========================================================="
